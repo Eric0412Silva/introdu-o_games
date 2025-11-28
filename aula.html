@@ -3,37 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aula 2: Master Class Completa</title>
+    <title>Programação de Jogos | Módulo 1 (SENAI)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Press+Start+2P&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        'retro': ['"Press Start 2P"', 'cursive'],
-                        'code': ['"Roboto Mono"', 'monospace'],
-                        'sans': ['Inter', 'sans-serif'],
+                        'sans': ['Roboto', 'sans-serif'], 
+                        'retro': ['"Press Start 2P"', 'cursive'], 
+                        'code': ['"Fira Code"', 'monospace'], 
                     },
                     colors: {
+                        senai: {
+                            blue: '#005CAA', // Azul Oficial
+                            dark: '#003A6B',
+                            light: '#2D81C5',
+                            red: '#E52421',  // Vermelho Oficial
+                        },
                         game: {
                             dark: '#0f172a',
-                            panel: '#1e293b',
-                            accent: '#8b5cf6', 
-                            godot: '#478cbf', 
-                            godotDark: '#326285',
+                            panel: '#ffffff', 
+                            text: '#1e293b',
                         }
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'fade-in': 'fadeIn 0.5s ease-out',
+                        'bounce-slight': 'bounceSlight 2s infinite',
                     },
                     keyframes: {
                         fadeIn: {
                             '0%': { opacity: '0', transform: 'translateY(10px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'translateY(-2px)' },
+                            '50%': { transform: 'translateY(2px)' },
                         }
                     }
                 }
@@ -42,587 +49,1268 @@
     </script>
 
     <style>
-        body { background-color: #0f172a; color: #e2e8f0; }
-        .retro-shadow { box-shadow: 4px 4px 0px 0px #8b5cf6; }
-        .retro-shadow:active { box-shadow: 0px 0px 0px 0px; transform: translate(4px, 4px); }
-        .scanline {
-            width: 100%; height: 2px; background: rgba(255,255,255,0.05); opacity: 0.1;
-            animation: scanline 6s linear infinite; pointer-events: none; position: fixed; z-index: 50;
-        }
-        @keyframes scanline { 0% { top: 0%; } 100% { top: 100%; } }
+        body { background-color: #f1f5f9; color: #334155; }
         
-        .grid-cell { width: 100%; padding-top: 100%; position: relative; border: 1px solid #334155; }
-        .robot { transition: all 0.3s ease; }
+        /* Utilitários Visuais */
+        .senai-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 92, 170, 0.05); border-radius: 0.75rem; }
+        .grid-cell { width: 100%; aspect-ratio: 1/1; position: relative; border: 1px solid #cbd5e1; background-color: #f8fafc; }
+        .robot { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Syntax Highlighting Custom */
-        .gd-keyword { color: #ff7085; font-weight: bold; }
-        .gd-func { color: #57b3ff; }
-        .gd-var { color: #fff; }
-        .gd-string { color: #ffe366; }
-        .gd-num { color: #a5fffa; }
-        .gd-comment { color: #6d7c8d; font-style: italic; }
-        .gd-node { color: #41ff83; }
-        .gd-type { color: #ffad66; }
+        /* Syntax Highlighting Customizado (Tema Dracula/Godot Dark) */
+        .code-block { background-color: #1e293b; color: #e2e8f0; border-radius: 0.5rem; font-family: 'Fira Code', monospace; }
+        .gd-keyword { color: #ff79c6; font-weight: bold; } /* Rosa */
+        .gd-func { color: #8be9fd; } /* Ciano */
+        .gd-var { color: #f8f8f2; } /* Branco */
+        .gd-string { color: #f1fa8c; } /* Amarelo */
+        .gd-num { color: #bd93f9; } /* Roxo */
+        .gd-comment { color: #6272a4; font-style: italic; } /* Cinza Azulado */
+        .gd-node { color: #50fa7b; font-weight: bold; } /* Verde */
+        .gd-type { color: #ffb86c; } /* Laranja */
         
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        /* Scrollbar Fina e Elegante */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
-<body class="h-full flex overflow-hidden font-sans">
-    <div class="scanline"></div>
+<body class="h-full flex flex-col md:flex-row overflow-hidden font-sans text-slate-700">
 
-    <aside class="w-64 bg-game-panel border-r border-slate-700 flex flex-col flex-shrink-0 z-20 hidden md:flex">
-        <div class="p-6 border-b border-slate-700">
-            <h1 class="font-retro text-xs text-purple-400 mb-2">DEV COURSE: MOD 1</h1>
-            <h2 class="text-xl font-bold text-white">Lógica & Godot</h2>
-            <p class="text-xs text-slate-400 mt-2">Plano de Aula Completo</p>
+    <header class="md:hidden bg-senai-blue text-white p-4 flex justify-between items-center shadow-md z-50 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-1.5 bg-senai-red rounded-full"></div>
+            <div>
+                <h1 class="font-bold text-sm tracking-widest uppercase">Programação</h1>
+                <p class="text-[10px] opacity-80">Módulo 1: Lógica & Godot</p>
+            </div>
+        </div>
+        <button id="mobile-menu-btn" class="p-2 focus:outline-none active:bg-senai-dark rounded transition">
+            <span class="text-2xl">☰</span>
+        </button>
+    </header>
+
+    <aside id="sidebar" class="bg-white border-r border-slate-200 w-72 flex-col z-40 fixed md:relative h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none flex">
+        <div class="hidden md:block p-8 border-b border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="h-10 w-2 bg-senai-red rounded-full"></div>
+                <div>
+                    <div class="text-[10px] font-black tracking-[0.2em] text-senai-blue uppercase">Curso Técnico</div>
+                    <h1 class="text-xl font-black text-slate-800 leading-none">DEV JOGOS</h1>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 font-medium ml-5">Unidade: Lógica & Engine</p>
         </div>
         
-        <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 mt-1">Lógica Básica</div>
-            <button onclick="showSection('intro')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group bg-slate-800 border-l-4 border-purple-500"><span class="mr-3 text-lg">🚀</span> <span class="text-sm font-semibold">Aquecimento</span></button>
-            <button onclick="showSection('algo')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">🤖</span> <span class="text-sm font-semibold">Algoritmo</span></button>
-            <button onclick="showSection('vars')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">📦</span> <span class="text-sm font-semibold">Variáveis</span></button>
-            <button onclick="showSection('cond')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">🚦</span> <span class="text-sm font-semibold">Condicionais</span></button>
-            <button onclick="showSection('loop')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">🔄</span> <span class="text-sm font-semibold">Game Loop</span></button>
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="px-4 py-2 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                <span class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></span>Fundamentos
+            </div>
+            <button onclick="showSection('intro')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-blue-50 border-l-4 border-transparent hover:border-senai-blue bg-blue-50 border-senai-blue">
+                <span class="mr-3 text-lg">🚀</span> <span class="font-medium text-sm">Introdução</span>
+            </button>
+            <button onclick="showSection('algo')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-blue-50 border-l-4 border-transparent hover:border-senai-blue">
+                <span class="mr-3 text-lg">🤖</span> <span class="font-medium text-sm">Algoritmos</span>
+            </button>
+            <button onclick="showSection('vars')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-blue-50 border-l-4 border-transparent hover:border-senai-blue">
+                <span class="mr-3 text-lg">📦</span> <span class="font-medium text-sm">Variáveis</span>
+            </button>
+            <button onclick="showSection('cond')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-blue-50 border-l-4 border-transparent hover:border-senai-blue">
+                <span class="mr-3 text-lg">🚦</span> <span class="font-medium text-sm">Condicionais</span>
+            </button>
+            <button onclick="showSection('loop')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-blue-50 border-l-4 border-transparent hover:border-senai-blue">
+                <span class="mr-3 text-lg">🔄</span> <span class="font-medium text-sm">Game Loop</span>
+            </button>
 
-            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 mt-4 border-t border-slate-700 pt-4">Arquitetura</div>
-            <button onclick="showSection('oop')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">🧬</span> <span class="text-sm font-semibold text-yellow-100">POO & Estrutura</span></button>
-            <button onclick="showSection('gamedesign')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">🎨</span> <span class="text-sm font-semibold text-pink-100">Game Design</span></button>
+            <div class="px-4 py-2 mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                <span class="w-1.5 h-1.5 bg-yellow-400 rounded-full mr-2"></span>Arquitetura
+            </div>
+            <button onclick="showSection('oop')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-yellow-50 border-l-4 border-transparent hover:border-yellow-500">
+                <span class="mr-3 text-lg">🧬</span> <span class="font-medium text-sm text-slate-700">POO & Estrutura</span>
+            </button>
+            <button onclick="showSection('gamedesign')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-pink-50 border-l-4 border-transparent hover:border-pink-500">
+                <span class="mr-3 text-lg">🎨</span> <span class="font-medium text-sm text-slate-700">Game Design</span>
+            </button>
 
-            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 mt-4 border-t border-slate-700 pt-4">Godot Engine</div>
-            <button onclick="showSection('gdscript')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center group"><span class="mr-3 text-lg">📜</span> <span class="text-sm font-semibold text-game-godot">GDScript Pro</span></button>
+            <div class="px-4 py-2 mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                <span class="w-1.5 h-1.5 bg-senai-blue rounded-full mr-2"></span>Godot Engine
+            </div>
+            <button onclick="showSection('gdscript')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-slate-100 border-l-4 border-transparent hover:border-senai-blue mb-1">
+                <span class="mr-3 text-lg">📜</span> <span class="font-bold text-sm text-senai-blue">GDScript Pro</span>
+            </button>
+            
+            <button onclick="showSection('simulation')" class="nav-btn w-full text-left px-4 py-3 rounded-lg flex items-center transition-all hover:bg-green-50 border-l-4 border-transparent hover:border-green-600 bg-white shadow-sm mt-2 group-hover:shadow-md">
+                <span class="mr-3 text-lg">🎮</span> <span class="font-black text-sm text-green-700">Simulação Final</span>
+            </button>
         </nav>
         
-        <div class="p-4 border-t border-slate-700 text-center"><span class="text-xs text-slate-600 font-code">v3.5_FULL_EDITION</span></div>
+        <div class="p-4 border-t border-slate-200 text-center bg-slate-50">
+             <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SENAI • Aula 02 • v6.0</span>
+        </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto relative scroll-smooth" id="main-scroll">
-        <header class="md:hidden p-4 bg-game-panel border-b border-slate-700 flex justify-between items-center sticky top-0 z-30">
-            <h1 class="font-retro text-xs text-purple-400">AULA 02</h1>
-            <button id="mobile-menu-btn" class="text-white p-2">☰</button>
-        </header>
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div id="mobile-menu" class="fixed inset-0 bg-black/90 z-40 hidden flex flex-col p-8 space-y-4 md:hidden overflow-y-auto">
-            <button class="text-right text-white text-2xl mb-4" onclick="toggleMobileMenu()">✕</button>
-            <button onclick="showSection('intro'); toggleMobileMenu()" class="text-white text-xl">🚀 Aquecimento</button>
-            <button onclick="showSection('algo'); toggleMobileMenu()" class="text-white text-xl">🤖 Algoritmo</button>
-            <button onclick="showSection('vars'); toggleMobileMenu()" class="text-white text-xl">📦 Variáveis</button>
-            <button onclick="showSection('cond'); toggleMobileMenu()" class="text-white text-xl">🚦 Condicionais</button>
-            <button onclick="showSection('loop'); toggleMobileMenu()" class="text-white text-xl">🔄 Game Loop</button>
-            <button onclick="showSection('oop'); toggleMobileMenu()" class="text-yellow-200 text-xl">🧬 POO</button>
-            <button onclick="showSection('gamedesign'); toggleMobileMenu()" class="text-pink-200 text-xl">🎨 Design</button>
-            <button onclick="showSection('gdscript'); toggleMobileMenu()" class="text-blue-300 text-xl font-bold">📜 GDScript Pro</button>
-        </div>
+    <main class="flex-1 overflow-y-auto relative bg-slate-100 scroll-smooth p-4 md:p-8 lg:p-12 w-full" id="main-scroll">
 
-        <div class="p-6 md:p-12 max-w-5xl mx-auto">
+        <section id="intro" class="content-section max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Introdução à Lógica</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">O Computador é inteligente ou apenas obediente?</p>
+            </div>
 
-            <section id="intro" class="content-section animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-purple-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">Aquecimento</h2><p class="text-slate-400 text-lg">O Computador é inteligente ou obediente?</p></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="senai-card p-8">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="bg-senai-red text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Conceito Chave</span>
+                    </div>
+                    <p class="text-2xl leading-relaxed text-slate-700 mb-6 font-light">
+                        "O computador é um <strong class="text-senai-blue font-black">burro muito rápido</strong>."
+                    </p>
+                    <p class="text-slate-600 mb-6 leading-relaxed">
+                        Ele não tem intuição. Ele não "adivinha" o que você quer. Ele executa ordens literais, linha por linha, sem questionar se faz sentido ou não.
+                    </p>
+                    <div class="space-y-4 bg-slate-50 p-6 rounded-lg border border-slate-100">
+                        <div class="flex items-start">
+                            <span class="bg-red-100 text-red-600 p-1.5 rounded mr-3 text-xs font-bold">❌ ERRADO</span>
+                            <div>
+                                <span class="text-slate-700 font-medium block">"Faça um bolo"</span>
+                                <span class="text-slate-400 text-xs italic">Comando abstrato. O PC trava.</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="bg-green-100 text-green-600 p-1.5 rounded mr-3 text-xs font-bold">✅ CERTO</span>
+                            <div>
+                                <span class="text-slate-700 font-medium block">"Pegue 2 ovos. Quebre na tigela. Misture."</span>
+                                <span class="text-slate-400 text-xs italic">Instrução sequencial e exata.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="bg-game-panel p-8 rounded-xl border border-slate-700">
-                        <h3 class="font-retro text-yellow-400 mb-4 text-sm">A VERDADE</h3>
-                        <p class="text-lg leading-relaxed mb-6">"O computador é um <strong class="text-purple-400">burro muito rápido</strong>."</p>
-                        <p class="text-slate-300 mb-4">Ele não adivinha o que você quer. Ele apenas executa ordens exatas.</p>
-                        <ul class="space-y-4">
-                            <li class="flex items-start"><span class="text-red-400 mr-2">❌</span><span>"Faça um bolo" <span class="text-slate-500 text-sm">(Erro: Comando desconhecido)</span></span></li>
-                            <li class="flex items-start"><span class="text-green-400 mr-2">✅</span><span>"Pegue 2 ovos. Quebre. Misture." <span class="text-slate-500 text-sm">(Executa em 0.001s)</span></span></li>
+
+                <div class="code-block p-6 shadow-2xl relative flex flex-col justify-center min-h-[300px]">
+                    <div class="absolute top-0 left-0 w-full bg-slate-800 p-3 flex gap-2 rounded-t-lg border-b border-slate-700">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-auto text-xs text-slate-500 font-mono">terminal -- bash</span>
+                    </div>
+                    <div class="mt-8 space-y-4 font-mono text-sm">
+                        <div>
+                            <p class="text-green-400">aluno@senai:~$ <span class="text-white">computador.pular()</span></p>
+                            <p class="text-red-400 mt-1">ERRO FATAL: Função 'pular' indefinida.</p>
+                        </div>
+                        <div class="pl-4 border-l-2 border-slate-600">
+                            <p class="text-slate-400 italic">O sistema precisa saber:</p>
+                            <p class="text-blue-300">1. Qual a força Y? (pixels/s)</p>
+                            <p class="text-blue-300">2. Existe gravidade? (float)</p>
+                            <p class="text-blue-300">3. O player está no chão? (bool)</p>
+                        </div>
+                        <div class="mt-4 border-t border-slate-700 pt-2 flex">
+                            <span class="text-green-400 mr-2">➜</span> <span class="text-yellow-400 animate-pulse">_</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="algo" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Algoritmos</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">A receita do passo a passo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="senai-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-slate-700 uppercase text-sm flex items-center"><span class="text-xl mr-2">🤖</span> Laboratório: Robô</h3>
+                        <button onclick="resetRobot()" class="text-xs bg-slate-100 hover:bg-red-50 text-red-500 font-bold px-3 py-1.5 rounded transition border border-transparent hover:border-red-200">Resetar</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-5 gap-1 bg-slate-200 p-1 mb-6 rounded-lg max-w-xs mx-auto shadow-inner" id="robot-grid">
+                        </div>
+
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Comandos:</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="addCommand('L')" class="bg-white hover:bg-slate-50 text-slate-700 py-3 rounded font-bold shadow-sm border-b-4 border-slate-300 active:border-b-0 active:translate-y-1 text-sm transition">⬅ Virar Esq</button>
+                            <button onclick="addCommand('F')" class="bg-senai-blue hover:bg-blue-600 text-white py-3 rounded font-bold shadow-sm border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 text-sm transition">⬆ ANDAR</button>
+                            <button onclick="addCommand('R')" class="bg-white hover:bg-slate-50 text-slate-700 py-3 rounded font-bold shadow-sm border-b-4 border-slate-300 active:border-b-0 active:translate-y-1 text-sm transition">Virar Dir ➡</button>
+                        </div>
+                    </div>
+
+                    <button onclick="runRobot()" class="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-lg font-black text-sm tracking-widest shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                        <span>▶</span> EXECUTAR CÓDIGO
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-6 h-full">
+                    <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-senai-blue">
+                        <h3 class="font-bold text-senai-blue mb-2 text-lg">A Regra de Ouro</h3>
+                        <p class="text-slate-600 text-sm mb-3">O computador executa <strong>literalmente</strong> a sequência. Ele não desvia sozinho.</p>
+                        <div class="text-xs text-slate-500 bg-white p-3 rounded border border-blue-100">
+                            <strong>Desafio:</strong> Leve o robô até a bandeira vermelha. Cuidado com as bordas!
+                        </div>
+                    </div>
+
+                    <div class="code-block p-4 flex-1 flex flex-col min-h-[200px]">
+                        <p class="text-slate-400 border-b border-slate-700 pb-2 mb-2 text-xs font-bold uppercase tracking-wider">// Console de Comandos:</p>
+                        <div id="code-display" class="flex-1 overflow-y-auto space-y-1 text-green-400 text-xs md:text-sm custom-scrollbar pr-2 font-mono">
+                            <span class="text-slate-600 italic opacity-50">Adicione comandos para começar...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vars" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Variáveis</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">As "Caixas" da Memória.</p>
+            </div>
+
+            <div class="senai-card p-6 md:p-10 mb-8 bg-slate-50/50">
+                <h3 class="text-center text-slate-400 mb-10 font-bold text-xs uppercase tracking-[0.2em]">Visualizador de Memória RAM</h3>
+                
+                <div class="flex flex-col md:flex-row flex-wrap justify-center gap-10 md:gap-16 items-center">
+                    
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="relative group">
+                            <div class="w-32 h-32 bg-white border-4 border-red-500 rounded-2xl flex items-center justify-center shadow-lg transform transition-all group-hover:-translate-y-1">
+                                <span id="display-hp" class="text-4xl font-black text-slate-800">100</span>
+                            </div>
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-3 py-0.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm border border-white">VIDA (int)</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="updateVar('hp', -10)" class="bg-white border border-slate-300 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">-10</button>
+                            <button onclick="updateVar('hp', 10)" class="bg-white border border-slate-300 text-green-600 hover:bg-green-50 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">+10</button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="relative group">
+                            <div class="w-48 h-32 bg-white border-4 border-blue-500 rounded-2xl flex items-center justify-center shadow-lg transform transition-all group-hover:-translate-y-1">
+                                <span id="display-name" class="text-xl font-bold text-slate-800 truncate px-4">"Mario"</span>
+                            </div>
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-3 py-0.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm border border-white">PLAYER (string)</div>
+                        </div>
+                        <div class="flex gap-2 w-full max-w-[180px]">
+                            <input type="text" id="input-name" placeholder="Novo nome..." class="bg-white border border-slate-300 text-slate-700 px-2 py-1.5 rounded-lg text-xs w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <button onclick="updateName()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm">OK</button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="relative group">
+                            <div class="w-32 h-32 bg-white border-4 border-yellow-400 rounded-2xl flex items-center justify-center shadow-lg transform transition-all group-hover:-translate-y-1">
+                                <span id="display-key" class="text-5xl transition-transform duration-300">❌</span>
+                            </div>
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-yellow-900 px-3 py-0.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm border border-white">CHAVE (bool)</div>
+                        </div>
+                        <button onclick="toggleKey()" class="bg-white border border-slate-300 text-slate-600 hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-400 px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">Alternar Valor</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="senai-card p-6">
+                    <h4 class="font-bold text-senai-blue mb-3 flex items-center text-sm uppercase tracking-wide"><span class="text-xl mr-2">💡</span> O Conceito</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Imagine uma caixa de sapato. O rótulo escrito nela é o <strong>Nome da Variável</strong>. O que você guarda dentro dela é o <strong>Valor</strong>.
+                        <br><br>
+                        Você pode tirar um tênis velho e colocar um novo (mudar o valor), mas a caixa continua sendo a mesma "Caixa de Sapatos".
+                    </p>
+                </div>
+                <div class="senai-card p-6">
+                    <h4 class="font-bold text-senai-blue mb-3 flex items-center text-sm uppercase tracking-wide"><span class="text-xl mr-2">📋</span> Tipos Primitivos (Godot)</h4>
+                    <ul class="text-sm space-y-3 font-code text-slate-600">
+                        <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span><span class="text-purple-600 font-bold">int</span> (Inteiro)</span> 
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-500">1, 10, -5</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span><span class="text-blue-600 font-bold">float</span> (Decimal)</span> 
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-500">2.5, 3.14</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span><span class="text-yellow-600 font-bold">String</span> (Texto)</span> 
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-500">"Olá"</span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span><span class="text-red-600 font-bold">bool</span> (Lógico)</span> 
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-500">true, false</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="cond" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Condicionais</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">Tomada de Decisão (IF / ELSE).</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="senai-card p-8 text-center flex flex-col justify-center items-center bg-slate-50/50">
+                    <div class="absolute top-4 left-4 text-[10px] bg-slate-200 px-2 py-1 rounded text-slate-500 font-code font-bold">SIMULAÇÃO.exe</div>
+                    
+                    <div id="gate-status" class="w-32 h-32 md:w-40 md:h-40 bg-red-100 border-8 border-red-500 rounded-full flex items-center justify-center mb-8 transition-all duration-500 shadow-inner">
+                        <span class="text-5xl md:text-6xl filter drop-shadow-md">🔒</span>
+                    </div>
+
+                    <div class="code-block p-5 rounded-lg text-left font-code text-xs md:text-sm mb-8 w-full max-w-md shadow-lg border border-slate-700">
+                        <p><span class="gd-keyword">if</span> (<span class="gd-var">tem_chave</span> == <span class="gd-num">true</span>):</p>
+                        <p class="ml-4 text-green-400">abrir_portao()</p>
+                        <p><span class="gd-keyword">else</span>:</p>
+                        <p class="ml-4 text-red-400">bloquear_acesso()</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <label class="flex items-center space-x-3 cursor-pointer select-none">
+                            <input type="checkbox" id="key-checkbox" class="w-6 h-6 text-senai-blue rounded focus:ring-senai-blue border-gray-300 transition" onchange="checkDoor()">
+                            <span class="text-slate-700 font-bold text-sm">Tenho a Chave</span>
+                        </label>
+                    </div>
+                    
+                    <div id="door-msg" class="mt-6 font-black text-sm h-6 text-red-500 tracking-[0.2em] animate-pulse">ACESSO NEGADO</div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="senai-card p-6 border-l-4 border-senai-red">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Analogia: Vivo ou Morto</h3>
+                        <p class="text-slate-600 mb-4 text-sm leading-relaxed">
+                            O computador é o juiz da brincadeira. Ele verifica a condição antes de cada ação.
+                        </p>
+                        <div class="space-y-3 text-sm text-slate-500 font-medium">
+                            <div class="flex items-center p-2 bg-slate-50 rounded">
+                                <span class="font-bold text-purple-600 w-16 text-right mr-3">SE</span> 
+                                <span>(Eu disser "VIVO")</span>
+                                <span class="text-slate-300 mx-2">➜</span>
+                                <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">Levantar</span>
+                            </div>
+                            <div class="flex items-center p-2 bg-slate-50 rounded">
+                                <span class="font-bold text-purple-600 w-16 text-right mr-3">SENÃO</span> 
+                                <span>(Qualquer outra coisa)</span>
+                                <span class="text-slate-300 mx-2">➜</span>
+                                <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">Agachar</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="senai-card p-6">
+                        <h4 class="font-bold text-senai-blue mb-3 text-sm uppercase">No Jogo Real (Godot)</h4>
+                        <ul class="list-none space-y-3 mt-2 text-sm text-slate-600">
+                            <li class="bg-slate-50 p-2 rounded border border-slate-100">
+                                <strong class="block text-slate-800 text-xs mb-1 uppercase">Colisão</strong>
+                                <span class="font-code text-xs text-slate-500">if body.name == "Inimigo": morrer()</span>
+                            </li>
+                            <li class="bg-slate-50 p-2 rounded border border-slate-100">
+                                <strong class="block text-slate-800 text-xs mb-1 uppercase">Input</strong>
+                                <span class="font-code text-xs text-slate-500">if Input.is_action_pressed("pular"): pular()</span>
+                            </li>
                         </ul>
                     </div>
-                    <div class="bg-black p-6 rounded-xl border border-slate-700 font-code text-sm relative overflow-hidden shadow-inner">
-                        <div class="absolute top-2 right-2 text-xs text-slate-500">TERMINAL</div>
-                        <p class="text-green-500">> Pedindo para o computador pular...</p>
-                        <p class="text-white mt-2">ERRO: Comando 'Pular' indefinido.</p>
-                        <p class="text-slate-400 mt-1">Você precisa definir:</p>
-                        <p class="text-purple-400 ml-4">1. Quanta força?</p>
-                        <p class="text-purple-400 ml-4">2. Qual direção?</p>
-                        <p class="text-purple-400 ml-4">3. Tem gravidade?</p>
-                        <div class="mt-4 pt-4 border-t border-slate-800"><p class="text-yellow-500 blink">_</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="loop" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Game Loop</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">60 Quadros por Segundo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <div class="bg-black rounded-xl border-4 border-slate-800 relative overflow-hidden aspect-video flex items-center justify-center shadow-2xl">
+                    <canvas id="gameCanvas" width="400" height="300" class="w-full h-full object-contain"></canvas>
+                    <div class="absolute top-3 left-3 font-code text-[10px] md:text-xs text-green-400 bg-slate-900/80 px-3 py-1 rounded backdrop-blur-sm border border-slate-700">
+                        FPS: <span id="fps-counter" class="font-bold text-white">60</span> | FRAMES: <span id="frame-counter" class="text-slate-400">0</span>
                     </div>
                 </div>
-            </section>
-            
-            <section id="algo" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-blue-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">Algoritmo</h2><p class="text-slate-400 text-lg">A receita do passo a passo.</p></div>
-                </div>
-                <div class="grid lg:grid-cols-2 gap-8">
-                    <div class="bg-slate-800 p-6 rounded-xl border-2 border-slate-600">
-                        <div class="flex justify-between mb-4"><h3 class="font-bold text-white">Simulador de Robô</h3><button onclick="resetRobot()" class="text-xs text-red-400 hover:text-white">Resetar</button></div>
-                        <div class="grid grid-cols-5 gap-1 bg-slate-900 p-1 mb-4 aspect-square relative" id="robot-grid"></div>
-                        <div class="flex gap-2 mb-4">
-                            <button onclick="addCommand('F')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold retro-shadow active:translate-y-1 transition">⬆ ANDAR</button>
-                            <button onclick="addCommand('L')" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded font-bold retro-shadow active:translate-y-1 transition">⬅ Esq</button>
-                            <button onclick="addCommand('R')" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded font-bold retro-shadow active:translate-y-1 transition">➡ Dir</button>
+
+                <div class="space-y-6">
+                    <div class="senai-card p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">O Ciclo Infinito</h3>
+                        <p class="text-slate-600 mb-6 text-sm leading-relaxed">
+                            Diferente de um programa de escritório (Word) que espera você clicar para fazer algo, o jogo roda em um loop eterno frenético.
+                        </p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-150 transform" id="step-input">
+                                <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-4 text-xs font-black text-slate-500 border border-slate-300">1</span>
+                                <div>
+                                    <span class="text-sm font-bold block text-slate-700">Ler Comandos (Input)</span>
+                                    <span class="text-xs text-slate-400">Teclado, Mouse, Controle</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-150 transform" id="step-update">
+                                <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-4 text-xs font-black text-slate-500 border border-slate-300">2</span>
+                                <div>
+                                    <span class="text-sm font-bold block text-slate-700">Calcular Física/Lógica</span>
+                                    <span class="text-xs text-slate-400">Gravidade, Colisões, IA</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-150 transform" id="step-draw">
+                                <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-4 text-xs font-black text-slate-500 border border-slate-300">3</span>
+                                <div>
+                                    <span class="text-sm font-bold block text-slate-700">Desenhar na Tela</span>
+                                    <span class="text-xs text-slate-400">Renderizar Pixel a Pixel</span>
+                                </div>
+                            </div>
                         </div>
-                        <button onclick="runRobot()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold font-retro text-xs retro-shadow active:translate-y-1 transition">EXECUTAR CÓDIGO</button>
+                        <p class="text-xs text-senai-blue mt-6 text-center font-bold uppercase tracking-wider bg-blue-50 py-2 rounded">Isso acontece 60 vezes a cada segundo!</p>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-game-panel p-6 rounded-xl border-l-4 border-blue-500">
-                            <h3 class="font-bold text-lg mb-2">A Regra de Ouro</h3>
-                            <p class="text-slate-300 mb-4">Como os computadores pensam:</p>
-                            <ul class="list-disc pl-5 space-y-2 text-sm text-slate-400">
-                                <li>O programador dá ordens.</li>
-                                <li>O computador executa <strong>literalmente</strong>.</li>
-                                <li>Se você disser "Ande" sem dizer para onde, ele bate na parede.</li>
-                                <li>Precisão é tudo!</li>
+
+                    <div class="code-block p-5 border-l-4 border-senai-blue shadow-lg">
+                        <h4 class="font-bold text-white text-sm mb-3 border-b border-slate-700 pb-2">Na Godot Engine:</h4>
+                        <p class="font-code text-sm text-green-400 mb-1">func _process(delta):</p>
+                        <p class="font-code text-xs text-slate-500 ml-6 italic mb-1"># Código aqui roda todo frame</p>
+                        <p class="font-code text-xs text-slate-300 ml-6">ler_teclado()</p>
+                        <p class="font-code text-xs text-slate-300 ml-6">mover_personagem()</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="oop" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">POO & Estrutura</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">Entendendo Herança e Nós (Nodes).</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <div class="space-y-6">
+                    <div class="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500 text-slate-700 shadow-sm">
+                        <h3 class="font-bold text-xl text-yellow-800 mb-2">O Poder da Herança</h3>
+                        <p class="text-sm leading-relaxed">
+                            Na Godot (e em RPGs), classes "filhas" herdam poderes das classes "pai". 
+                            <br><strong>Exemplo:</strong> Você não precisa programar a gravidade do zero; você cria um script que "herda" de um objeto que já sabe cair.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center space-y-3 p-6 bg-white rounded-lg shadow-sm border border-slate-200">
+                        <div class="w-56 bg-slate-100 p-3 rounded text-center text-sm border border-slate-300 text-slate-500 relative">
+                            <span class="absolute left-3 top-3 text-[10px] opacity-50">⚪</span>
+                            <strong>Node</strong> 
+                            <span class="text-[10px] block text-slate-400 mt-1 uppercase tracking-wide">Base de Tudo</span>
+                        </div>
+                        <div class="h-6 w-0.5 bg-slate-300"></div>
+                        <div class="w-56 bg-slate-100 p-3 rounded text-center text-sm border border-slate-300 text-slate-500 relative">
+                            <span class="absolute left-3 top-3 text-[10px] opacity-50">🔵</span>
+                            <strong>Node2D</strong> 
+                            <span class="text-[10px] block text-slate-400 mt-1 uppercase tracking-wide">Tem Posição X, Y</span>
+                        </div>
+                        <div class="h-6 w-0.5 bg-slate-300"></div>
+                        <div class="w-56 bg-slate-200 p-3 rounded text-center text-sm border-2 border-slate-400 text-slate-700 relative shadow-sm">
+                            <span class="absolute left-3 top-3 text-[10px]">🏃</span>
+                            <strong>CharacterBody2D</strong> 
+                            <span class="text-[10px] block text-slate-500 mt-1 uppercase tracking-wide">Sabe Colidir e Deslizar</span>
+                        </div>
+                        <div class="h-6 w-0.5 bg-yellow-500"></div>
+                        <div class="w-56 bg-yellow-100 p-4 rounded text-center text-sm border-2 border-yellow-500 text-yellow-900 font-bold shadow-md transform scale-105 relative">
+                            <span class="absolute left-3 top-3 text-xs">⭐</span>
+                            SEU JOGADOR 
+                            <span class="text-[10px] block font-normal text-yellow-800 mt-1 uppercase tracking-wide">Seu Script (Player.gd)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block p-8 relative overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center">
+                    <div class="absolute top-0 right-0 bg-yellow-500 text-black font-bold text-[10px] px-3 py-1 uppercase tracking-widest font-sans">Arquivo: Player.gd</div>
+                    
+                    <div class="flex items-center gap-5 mb-8 mt-2 border-b border-slate-700 pb-6">
+                        <div class="w-20 h-20 bg-slate-700 rounded-full border-4 border-white flex items-center justify-center text-4xl shadow-lg">🤖</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white font-mono">Player</h3>
+                            <p class="font-code text-xs text-red-400 mt-1">extends CharacterBody2D</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-900/50 p-5 rounded border border-slate-700">
+                            <h4 class="font-bold text-xs text-blue-400 mb-4 uppercase tracking-widest border-b border-slate-800 pb-2">Atributos (VAR)</h4>
+                            <p class="text-[10px] text-slate-500 mb-3 italic">"O que eu tenho"</p>
+                            <ul class="font-code text-xs md:text-sm space-y-3 text-slate-300">
+                                <li class="flex justify-between"><span>vida</span> <span class="text-green-400">100</span></li>
+                                <li class="flex justify-between"><span>velocidade</span> <span class="text-blue-400">200</span></li>
+                                <li class="flex justify-between"><span>nome</span> <span class="text-yellow-400">"Hero"</span></li>
                             </ul>
                         </div>
-                        <div class="bg-black p-4 rounded-lg border border-slate-700 font-code text-sm h-64 overflow-y-auto">
-                            <p class="text-slate-500">// Seu Algoritmo:</p>
-                            <div id="code-display" class="mt-2 space-y-1 text-green-400"></div>
+
+                        <div class="bg-slate-900/50 p-5 rounded border border-slate-700">
+                            <h4 class="font-bold text-xs text-pink-400 mb-4 uppercase tracking-widest border-b border-slate-800 pb-2">Métodos (FUNC)</h4>
+                            <p class="text-[10px] text-slate-500 mb-3 italic">"O que eu faço"</p>
+                            <ul class="font-code text-xs md:text-sm space-y-3 text-slate-300">
+                                <li>_ready()</li>
+                                <li>_process()</li>
+                                <li>pular()</li>
+                                <li>tomar_dano()</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-            </section>
-            
-            <section id="vars" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-yellow-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">Variáveis</h2><p class="text-slate-400 text-lg">As "Caixas" onde o jogo guarda informações.</p></div>
-                </div>
-                <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 mb-8">
-                    <h3 class="text-center text-slate-400 mb-8 font-retro text-xs">MEMÓRIA DO JOGO (RAM)</h3>
-                    <div class="flex flex-wrap justify-center gap-8">
-                        <div class="group relative">
-                            <div class="w-32 h-32 bg-red-900/50 border-2 border-red-500 rounded-lg flex items-center justify-center relative transition-all group-hover:bg-red-900">
-                                <span id="display-hp" class="text-4xl font-bold text-white">100</span>
-                                <div class="absolute -top-3 bg-slate-900 px-2 text-xs text-red-400 font-code">VIDA (int)</div>
-                            </div>
-                            <div class="mt-4 flex gap-2">
-                                <button onclick="updateVar('hp', -10)" class="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-red-500">-10 Dano</button>
-                                <button onclick="updateVar('hp', 10)" class="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-500">+10 Cura</button>
-                            </div>
-                        </div>
-                        <div class="group relative">
-                            <div class="w-48 h-32 bg-blue-900/50 border-2 border-blue-500 rounded-lg flex items-center justify-center relative transition-all group-hover:bg-blue-900">
-                                <span id="display-name" class="text-xl font-bold text-white">"Mario"</span>
-                                <div class="absolute -top-3 bg-slate-900 px-2 text-xs text-blue-400 font-code">PLAYER (string)</div>
-                            </div>
-                            <div class="mt-4">
-                                <input type="text" id="input-name" placeholder="Novo nome..." class="bg-slate-900 border border-slate-600 text-white px-2 py-1 rounded text-xs w-full mb-2">
-                                <button onclick="updateName()" class="w-full bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-blue-500">Mudar Nome</button>
+            </div>
+        </section>
+
+        <section id="gamedesign" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Game Design</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">Criando diversão, evitando frustração.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="senai-card p-6 md:p-8">
+                    <h3 class="font-bold text-slate-700 mb-2 text-lg">Teoria do Flow (Mihaly Csikszentmihalyi)</h3>
+                    <p class="text-xs text-slate-500 mb-6 leading-relaxed">Para o jogo ser bom, o jogador deve estar no canal verde. Se for difícil demais, ele ansia. Se for fácil demais, ele entedia.</p>
+                    
+                    <div class="relative h-64 bg-slate-900 border border-slate-300 rounded-lg mb-8 overflow-hidden shadow-inner">
+                        <div class="absolute inset-0 flex items-end">
+                            <div class="h-full w-full bg-gradient-to-tr from-slate-100 to-slate-200 relative">
+                                <div class="absolute top-0 left-0 w-1/2 h-1/2 flex items-center justify-center text-xs text-red-500 font-bold border-b border-r border-red-300/30 tracking-widest">ANSIEDADE</div>
+                                <div class="absolute bottom-0 right-0 w-1/2 h-1/2 flex items-center justify-center text-xs text-blue-500 font-bold border-t border-l border-blue-300/30 tracking-widest">TÉDIO</div>
+                                <div class="absolute bottom-0 left-0 w-full h-full bg-green-500/20" style="clip-path: polygon(0 100%, 100% 0, 100% 40%, 0 100%);"></div>
+                                <div class="absolute top-4 right-4 text-green-700 font-black text-xs bg-green-100 px-3 py-1 rounded shadow-sm">FLOW ZONE</div>
                             </div>
                         </div>
-                        <div class="group relative">
-                            <div class="w-32 h-32 bg-yellow-900/50 border-2 border-yellow-500 rounded-lg flex items-center justify-center relative transition-all group-hover:bg-yellow-900">
-                                <span id="display-key" class="text-4xl">❌</span>
-                                <div class="absolute -top-3 bg-slate-900 px-2 text-xs text-yellow-400 font-code">TEM_CHAVE (bool)</div>
-                            </div>
-                            <div class="mt-4"><button onclick="toggleKey()" class="w-full bg-yellow-600 text-black px-2 py-1 rounded text-xs font-bold hover:bg-yellow-500">Pegar/Largar</button></div>
+                        <div id="flow-dot" class="absolute w-6 h-6 bg-yellow-400 border-2 border-white rounded-full shadow-lg transition-all duration-300 z-10" style="bottom: 10%; left: 10%;"></div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-2 block">Habilidade do Jogador (Skill)</label>
+                            <input type="range" id="skill-slider" min="0" max="100" value="10" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateFlow()">
                         </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-2 block">Dificuldade do Desafio</label>
+                            <input type="range" id="diff-slider" min="0" max="100" value="10" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600" oninput="updateFlow()">
+                        </div>
+                        <div id="flow-status" class="text-center font-bold text-sm text-white bg-slate-400 py-3 rounded-lg mt-4 transition-colors shadow-sm uppercase tracking-wide">ESTADO: INICIANTE</div>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                     <div class="bg-game-panel p-6 rounded-xl">
-                        <h4 class="font-bold text-white mb-2">O Conceito</h4>
-                        <p class="text-slate-400 text-sm">Imagine uma caixa de sapato. O rótulo é o nome da variável. O que está dentro pode mudar, mas a caixa continua a mesma.</p>
-                     </div>
-                     <div class="bg-game-panel p-6 rounded-xl">
-                        <h4 class="font-bold text-white mb-2">Tipos de Dados</h4>
-                        <ul class="text-sm space-y-2 font-code">
-                            <li><span class="text-purple-400">int</span>: Inteiros (1, 2, 500) -> Moedas</li>
-                            <li><span class="text-purple-400">float</span>: Decimais (1.5, 3.14) -> Velocidade</li>
-                            <li><span class="text-purple-400">string</span>: Texto ("Zelda") -> Nomes</li>
-                            <li><span class="text-purple-400">bool</span>: Verdadeiro/Falso -> Chaves</li>
+
+                <div class="space-y-6 flex flex-col h-full">
+                    <div class="senai-card p-8 border-l-4 border-purple-500 flex-1">
+                        <h3 class="font-bold text-lg text-slate-800 mb-6">Estrutura de Nível (Kishōtenketsu)</h3>
+                        <p class="text-xs text-slate-500 mb-6">Filosofia usada pela Nintendo no Super Mario.</p>
+                        
+                        <ul class="space-y-6 text-sm text-slate-600">
+                            <li class="flex items-start">
+                                <span class="bg-purple-100 text-purple-700 rounded-full w-8 h-8 flex items-center justify-center mr-4 text-sm font-bold shrink-0 shadow-sm">1</span>
+                                <div>
+                                    <strong class="block text-slate-800 text-base mb-1">Introdução (Safe Zone)</strong>
+                                    Ensine a mecânica num ambiente seguro. Ex: Um buraco que não mata se cair.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-purple-100 text-purple-700 rounded-full w-8 h-8 flex items-center justify-center mr-4 text-sm font-bold shrink-0 shadow-sm">2</span>
+                                <div>
+                                    <strong class="block text-slate-800 text-base mb-1">Desenvolvimento</strong>
+                                    Aplique a mecânica com desafio real. Buracos maiores, inimigos.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-purple-100 text-purple-700 rounded-full w-8 h-8 flex items-center justify-center mr-4 text-sm font-bold shrink-0 shadow-sm">3</span>
+                                <div>
+                                    <strong class="block text-slate-800 text-base mb-1">Twist (Reviravolta)</strong>
+                                    Combine a mecânica com algo novo antes do fim. Ex: Pular buracos enquanto desvia de fogo.
+                                </div>
+                            </li>
                         </ul>
-                     </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center shadow-lg">
+                        <h4 class="text-[10px] text-slate-400 uppercase tracking-widest mb-3 font-bold">Regra de Ouro</h4>
+                        <p class="text-2xl text-white font-black italic">"Ensine sem Texto"</p>
+                        <p class="text-xs text-slate-400 mt-3 leading-relaxed">No Mario 1-1, o primeiro Goomba te obriga a pular. Se você morrer, recomeça rápido. O jogo ensinou a regra sem um pop-up chato.</p>
+                    </div>
                 </div>
-            </section>
+            </div>
+        </section>
+
+        <section id="gdscript" class="content-section hidden max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-10 border-l-8 border-senai-blue pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">GDScript Pro</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">Guia de Referência da Linguagem.</p>
+            </div>
+
+            <div class="mb-12">
+                <h3 class="font-bold text-slate-700 text-sm mb-6 uppercase tracking-wide flex items-center"><span class="w-2 h-2 bg-senai-blue rounded-full mr-2"></span> 1. Tipos de Dados Completos</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    
+                    <div class="senai-card p-4 border-t-4 border-purple-500 hover:shadow-md transition">
+                        <h4 class="font-code font-bold text-purple-600 text-sm">int</h4>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-3">Inteiro</p>
+                        <div class="bg-slate-100 p-2 rounded text-center text-xs font-code text-slate-700 mb-2">10, -5, 0</div>
+                        <p class="text-[10px] text-slate-400 border-t border-slate-100 pt-2">Uso: Vidas, Pontos, Munição</p>
+                    </div>
+
+                    <div class="senai-card p-4 border-t-4 border-blue-400 hover:shadow-md transition">
+                        <h4 class="font-code font-bold text-blue-500 text-sm">float</h4>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-3">Decimal</p>
+                        <div class="bg-slate-100 p-2 rounded text-center text-xs font-code text-slate-700 mb-2">3.14, 0.5</div>
+                        <p class="text-[10px] text-slate-400 border-t border-slate-100 pt-2">Uso: Velocidade, Tempo, Gravidade</p>
+                    </div>
+
+                    <div class="senai-card p-4 border-t-4 border-yellow-400 hover:shadow-md transition">
+                        <h4 class="font-code font-bold text-yellow-600 text-sm">String</h4>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-3">Texto</p>
+                        <div class="bg-slate-100 p-2 rounded text-center text-xs font-code text-slate-700 mb-2">"Olá Mundo"</div>
+                        <p class="text-[10px] text-slate-400 border-t border-slate-100 pt-2">Uso: Nomes, Diálogos, Logs</p>
+                    </div>
+
+                    <div class="senai-card p-4 border-t-4 border-red-500 hover:shadow-md transition">
+                        <h4 class="font-code font-bold text-red-500 text-sm">bool</h4>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-3">Lógico</p>
+                        <div class="bg-slate-100 p-2 rounded text-center text-xs font-code text-slate-700 mb-2">true, false</div>
+                        <p class="text-[10px] text-slate-400 border-t border-slate-100 pt-2">Uso: Vivo?, No chão?, Apertou?</p>
+                    </div>
+
+                    <div class="senai-card p-4 border-t-4 border-green-500 hover:shadow-md transition bg-slate-800 border-0">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-code font-bold text-green-400 text-sm">Vector2</h4>
+                            <span class="text-[8px] bg-green-900 text-green-300 px-1 rounded uppercase">Godot</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mb-3">Posição 2D</p>
+                        <div class="bg-black/50 p-2 rounded text-center text-xs font-code text-white mb-2">(X, Y)</div>
+                        <p class="text-[10px] text-slate-500 border-t border-slate-700 pt-2">Uso: Posição, Direção, Escala</p>
+                    </div>
+                </div>
+            </div>
             
-            <section id="cond" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-green-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">Condicionais</h2><p class="text-slate-400 text-lg">O Juiz do Jogo (SE / SENÃO).</p></div>
-                </div>
-                <div class="grid lg:grid-cols-2 gap-8">
-                    <div class="bg-slate-800 p-8 rounded-xl border border-slate-600 text-center relative">
-                        <div class="absolute top-4 left-4 text-xs text-slate-500 font-code">LOGIC_GATE.exe</div>
-                        <div id="gate-status" class="w-32 h-32 mx-auto bg-red-500 rounded-full flex items-center justify-center mb-6 transition-colors duration-500 shadow-[0_0_20px_rgba(239,68,68,0.6)]">
-                            <span class="text-4xl">🔒</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-white mb-4">Porta do Chefe</h3>
-                        <div class="bg-black p-4 rounded text-left font-code text-sm mb-6">
-                            <p><span class="text-purple-400">SE</span> (<span class="text-yellow-400">tem_chave</span> == <span class="text-blue-400">verdadeiro</span>) {</p>
-                            <p class="ml-4 text-green-400">Abrir_Porta();</p>
-                            <p>} <span class="text-purple-400">SENÃO</span> {</p>
-                            <p class="ml-4 text-red-400">Tocar_Som_Erro();</p>
-                            <p>}</p>
-                        </div>
-                        <div class="flex justify-center gap-4">
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" id="key-checkbox" class="form-checkbox h-6 w-6 text-purple-600 bg-slate-700 border-slate-500 rounded focus:ring-0" onchange="checkDoor()">
-                                <span class="text-white font-bold">Tenho a Chave</span>
-                            </label>
-                        </div>
-                        <p id="door-msg" class="mt-4 text-red-400 font-retro text-xs h-6">ACESSO NEGADO</p>
-                    </div>
-                    <div class="space-y-6">
-                        <div class="bg-game-panel p-6 rounded-xl border-l-4 border-green-500">
-                            <h3 class="font-bold text-lg mb-2">Exemplo Prático: Vivo ou Morto</h3>
-                            <p class="text-slate-300 mb-4">Imagine a lógica desta brincadeira:</p>
-                            <div class="space-y-3 text-sm text-slate-400">
-                                <p>1. <strong class="text-purple-400">SE</strong> o professor falar "VIVO" -> <span class="text-white">Levantar</span>.</p>
-                                <p>2. <strong class="text-purple-400">SENÃO</strong> (se ele falar "MORTO") -> <span class="text-white">Agachar</span>.</p>
-                            </div>
-                        </div>
-                        <div class="bg-game-panel p-6 rounded-xl">
-                            <h4 class="font-bold text-white mb-2">No Jogo Digital</h4>
-                            <ul class="list-disc pl-5 mt-2 text-sm text-slate-400 space-y-1">
-                                <li>SE (tecla_espaço == apertada) -> Pular</li>
-                                <li>SE (vida <= 0) -> Game Over</li>
-                                <li>SE (encostar na moeda) -> Pontos + 1</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="loop" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-purple-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">O Game Loop</h2><p class="text-slate-400 text-lg">O Coração do Jogo (60 FPS).</p></div>
-                </div>
-                <div class="grid lg:grid-cols-2 gap-8">
-                    <div class="bg-black rounded-xl border-2 border-slate-700 relative overflow-hidden aspect-video flex items-center justify-center">
-                        <canvas id="gameCanvas" width="400" height="300" class="w-full h-full"></canvas>
-                        <div class="absolute top-2 left-2 font-code text-xs text-green-500">
-                            FPS: <span id="fps-counter">60</span><br>FRAMES: <span id="frame-counter">0</span>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <div class="bg-game-panel p-6 rounded-xl">
-                            <h3 class="font-bold text-lg text-white mb-4">O Ciclo Infinito</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center p-3 bg-slate-800 rounded border border-slate-600" id="step-input"><span class="mr-3">1️⃣</span><span class="text-sm">Verificar Entrada</span></div>
-                                <div class="flex items-center p-3 bg-slate-800 rounded border border-slate-600" id="step-update"><span class="mr-3">2️⃣</span><span class="text-sm">Atualizar Física/Regras</span></div>
-                                <div class="flex items-center p-3 bg-slate-800 rounded border border-slate-600" id="step-draw"><span class="mr-3">3️⃣</span><span class="text-sm">Desenhar na Tela</span></div>
-                            </div>
-                            <p class="text-xs text-purple-400 mt-4 text-center">Isso acontece 60 vezes por segundo!</p>
-                        </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-purple-500">
-                            <h4 class="font-bold text-white text-sm">Na Godot:</h4>
-                            <p class="font-code text-sm text-green-400 mt-2">func _process(delta):</p>
-                            <p class="font-code text-xs text-slate-400 ml-4"># Tudo que você escrever aqui roda 60x/segundo</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="oop" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-yellow-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">POO & Estrutura</h2><p class="text-slate-400 text-lg">Entendendo Herança, Variáveis e Funções.</p></div>
-                </div>
-                <div class="grid lg:grid-cols-2 gap-8 mb-12">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <div class="senai-card p-6">
+                    <h3 class="font-bold text-slate-700 text-sm mb-6 uppercase tracking-wide flex items-center"><span class="w-2 h-2 bg-senai-blue rounded-full mr-2"></span> 2. Ciclo de Vida do Script</h3>
+                    
                     <div class="space-y-4">
-                        <div class="bg-game-panel p-6 rounded-xl border-l-4 border-yellow-500">
-                            <h3 class="font-bold text-xl text-white mb-2">1. Herança (<span class="font-code text-red-400">extends</span>)</h3>
-                            <p class="text-slate-300 text-sm">Na Godot (e em RPGs), tudo é baseado em "Tipos". Quando dizemos que algo <strong>estende</strong> outro, ele ganha todos os poderes do pai.</p>
-                        </div>
-                        <div class="flex flex-col items-center space-y-2">
-                            <div class="w-48 bg-slate-700 p-3 rounded text-center text-sm border border-slate-500 opacity-60"><strong>Node</strong></div>
-                            <div class="h-4 w-1 bg-slate-500"></div>
-                            <div class="w-48 bg-slate-700 p-3 rounded text-center text-sm border border-slate-500 opacity-80"><strong>Node2D</strong></div>
-                            <div class="h-4 w-1 bg-slate-500"></div>
-                            <div class="w-48 bg-slate-700 p-3 rounded text-center text-sm border border-slate-500"><strong>Sprite2D</strong></div>
-                            <div class="h-4 w-1 bg-yellow-500"></div>
-                            <div class="w-48 bg-yellow-900/50 p-3 rounded text-center text-sm border-2 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)] animate-pulse"><strong>SEU PLAYER</strong></div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-yellow-500 text-black font-bold text-xs px-2 py-1">FICHA DE PERSONAGEM</div>
-                        <div class="flex items-center space-x-4 mb-6 mt-2">
-                            <div class="w-16 h-16 bg-slate-900 rounded-full border-2 border-white flex items-center justify-center text-3xl">🧝</div>
-                            <div><h3 class="text-xl font-bold text-white">Heroi.gd</h3><p class="font-code text-xs text-red-400">extends CharacterBody2D</p></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-900/50 p-4 rounded border border-slate-700">
-                                <h4 class="font-retro text-xs text-blue-400 mb-3">VAR (Atributos)</h4>
-                                <ul class="font-code text-sm space-y-2">
-                                    <li class="flex justify-between"><span>vida</span> <span class="text-green-400">100</span></li>
-                                    <li class="flex justify-between"><span>nome</span> <span class="text-yellow-400">"Link"</span></li>
-                                </ul>
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm shrink-0 border border-green-200">Start</div>
+                            <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-green-500 w-full">
+                                <h4 class="font-code text-green-700 font-bold text-sm">func _ready():</h4>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">Roda <strong>UMA ÚNICA VEZ</strong> quando o objeto entra na cena (nasce).</p>
+                                <p class="text-[10px] text-slate-400 mt-2 uppercase font-bold tracking-wide">Ex: Configurar vida inicial, carregar arma.</p>
                             </div>
-                            <div class="bg-slate-900/50 p-4 rounded border border-slate-700">
-                                <h4 class="font-retro text-xs text-pink-400 mb-3">FUNC (Ações)</h4>
-                                <ul class="font-code text-sm space-y-2"><li>_ready()</li><li>pular()</li><li>atacar()</li></ul>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shrink-0 border border-blue-200">∞</div>
+                            <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-blue-500 w-full">
+                                <h4 class="font-code text-blue-700 font-bold text-sm">func _process(delta):</h4>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">Roda <strong>SEMPRE</strong> (aprox. 60 vezes por segundo). É o coração do movimento.</p>
+                                <p class="text-[10px] text-slate-400 mt-2 uppercase font-bold tracking-wide">Ex: Mover, detectar teclas, atualizar timers.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
-            
-            <section id="gamedesign" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-pink-500 rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">Game Design</h2><p class="text-slate-400 text-lg">Criando diversão, não frustração.</p></div>
-                </div>
-                <div class="grid lg:grid-cols-2 gap-10">
-                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-600">
-                        <h3 class="font-bold text-white mb-4">A Teoria do Flow (O Fluxo)</h3>
-                        <p class="text-sm text-slate-400 mb-6">Equilíbrio entre tédio e ansiedade.</p>
-                        <div class="relative h-64 bg-slate-900 border border-slate-700 rounded mb-6 overflow-hidden">
-                            <div class="absolute inset-0 flex items-end">
-                                <div class="h-full w-full bg-gradient-to-tr from-slate-800 to-slate-900 relative">
-                                    <div class="absolute top-0 left-0 w-1/2 h-1/2 bg-red-900/20 flex items-center justify-center text-xs text-red-400 font-bold">ANSIEDADE</div>
-                                    <div class="absolute bottom-0 right-0 w-1/2 h-1/2 bg-blue-900/20 flex items-center justify-center text-xs text-blue-400 font-bold">TÉDIO</div>
-                                    <div class="absolute bottom-0 left-0 w-full h-full bg-green-500/10" style="clip-path: polygon(0 100%, 100% 0, 100% 40%, 0 100%);"></div>
-                                    <div class="absolute top-4 right-4 text-green-400 font-bold text-sm">FLOW ZONE</div>
-                                </div>
-                            </div>
-                            <div id="flow-dot" class="absolute w-4 h-4 bg-yellow-400 rounded-full shadow-[0_0_10px_yellow] transition-all duration-300" style="bottom: 10%; left: 10%;"></div>
-                        </div>
-                        <div class="space-y-4">
-                            <div><label class="text-xs text-slate-400 uppercase font-bold">Habilidade</label><input type="range" id="skill-slider" min="0" max="100" value="10" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="updateFlow()"></div>
-                            <div><label class="text-xs text-slate-400 uppercase font-bold">Dificuldade</label><input type="range" id="diff-slider" min="0" max="100" value="10" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500" oninput="updateFlow()"></div>
-                            <div id="flow-status" class="text-center font-retro text-sm text-yellow-400 mt-2">ESTADO: INICIANTE</div>
-                        </div>
+
+                <div class="code-block p-6 shadow-xl flex flex-col h-full border border-slate-700">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                        <h3 class="font-bold text-slate-400 text-xs uppercase tracking-wide">3. Cheat Sheet (Cola)</h3>
+                        <span class="text-[10px] text-slate-600 font-mono">GDScript v4.x</span>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-game-panel p-6 rounded-xl border-l-4 border-pink-500">
-                            <h3 class="font-bold text-lg text-white mb-2">Estrutura de Fases</h3>
-                            <ul class="space-y-3 text-sm text-slate-300">
-                                <li><strong>👶 Introdução:</strong> Ambiente seguro.</li>
-                                <li><strong>🏃 Desenvolvimento:</strong> Aplica o desafio.</li>
-                                <li><strong>🔥 Twist:</strong> Combina com novidade.</li>
-                            </ul>
+                    
+                    <div class="space-y-2 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-60">
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Escrever no Console</span>
+                            <span class="text-xs font-code text-yellow-400">print("Oi")</span>
                         </div>
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-center">
-                            <h4 class="text-xs text-slate-500 uppercase mb-2">Dica de Ouro</h4>
-                            <p class="text-lg text-white font-bold">"Ensine sem Texto"</p>
-                            <p class="text-sm text-slate-400 mt-2">No Mario 1-1, o primeiro Goomba te obriga a pular. O jogo ensina a regra sem escrever nada.</p>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Destruir Objeto</span>
+                            <span class="text-xs font-code text-red-400">queue_free()</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Mover em X</span>
+                            <span class="text-xs font-code text-blue-400">position.x += 1</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Girar</span>
+                            <span class="text-xs font-code text-blue-400">rotation += 0.1</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Input (Teclado)</span>
+                            <span class="text-xs font-code text-green-400">Input.is_action...</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Trocar Cena</span>
+                            <span class="text-xs font-code text-purple-400">change_scene...</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-2 items-center group">
+                            <span class="text-xs text-slate-400 group-hover:text-white transition">Aleatório</span>
+                            <span class="text-xs font-code text-orange-400">randf_range(0,10)</span>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section id="gdscript" class="content-section hidden animate-fade-in">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="h-12 w-2 bg-game-godot rounded-full"></div>
-                    <div><h2 class="text-4xl font-bold text-white mb-2">GDScript Pro</h2><p class="text-slate-400 text-lg">Dominando a linguagem da Godot.</p></div>
+            <div class="bg-white rounded-xl border border-slate-300 overflow-hidden shadow-lg">
+                <div class="flex border-b border-slate-200 bg-slate-50">
+                    <button onclick="showCodeTab('move')" id="tab-move" class="flex-1 py-4 text-xs font-black text-slate-600 border-b-4 border-transparent hover:bg-slate-100 transition tracking-wider">MOVIMENTO</button>
+                    <button onclick="showCodeTab('physics')" id="tab-physics" class="flex-1 py-4 text-xs font-black text-slate-600 border-b-4 border-transparent hover:bg-slate-100 transition tracking-wider">FÍSICA</button>
+                    <button onclick="showCodeTab('combat')" id="tab-combat" class="flex-1 py-4 text-xs font-black text-slate-600 border-b-4 border-transparent hover:bg-slate-100 transition tracking-wider">COMBATE</button>
                 </div>
-
-                <div class="mb-12">
-                    <h3 class="font-retro text-xs text-slate-500 mb-4 uppercase">1. Tipos de Dados (As Caixas)</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        <div class="bg-slate-800 p-4 rounded-lg border-t-4 border-purple-500 hover:bg-slate-700 transition">
-                            <h4 class="font-bold text-purple-400 text-sm">int</h4><p class="text-xs text-slate-400 mb-2">Inteiro</p><code class="font-code text-xs bg-black p-1 rounded block text-center">10, -5</code>
-                        </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border-t-4 border-blue-400 hover:bg-slate-700 transition">
-                            <h4 class="font-bold text-blue-400 text-sm">float</h4><p class="text-xs text-slate-400 mb-2">Decimal</p><code class="font-code text-xs bg-black p-1 rounded block text-center">3.14, 0.5</code>
-                        </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border-t-4 border-yellow-400 hover:bg-slate-700 transition">
-                            <h4 class="font-bold text-yellow-400 text-sm">String</h4><p class="text-xs text-slate-400 mb-2">Texto</p><code class="font-code text-xs bg-black p-1 rounded block text-center">"Olá"</code>
-                        </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border-t-4 border-red-500 hover:bg-slate-700 transition">
-                            <h4 class="font-bold text-red-400 text-sm">bool</h4><p class="text-xs text-slate-400 mb-2">Lógico</p><code class="font-code text-xs bg-black p-1 rounded block text-center">true, false</code>
-                        </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border-t-4 border-game-godot hover:bg-slate-700 transition relative overflow-hidden">
-                            <div class="absolute top-0 right-0 bg-game-godot text-[8px] text-black px-1 font-bold">GODOT</div>
-                            <h4 class="font-bold text-game-godot text-sm">Vector2</h4><p class="text-xs text-slate-400 mb-2">Posição 2D</p><code class="font-code text-xs bg-black p-1 rounded block text-center">(X, Y)</code>
-                        </div>
+                <div class="p-0 grid grid-cols-1 md:grid-cols-2 min-h-[300px]">
+                    <div class="bg-slate-50 p-8 border-b md:border-b-0 md:border-r border-slate-200">
+                        <h4 class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-6 flex items-center"><span class="w-1.5 h-1.5 bg-slate-400 rounded-full mr-2"></span>Lógica Humana (Algoritmo)</h4>
+                        <div id="logic-content" class="text-slate-700 text-sm font-sans leading-relaxed"></div>
+                    </div>
+                    <div class="bg-[#1e293b] p-8 relative">
+                        <div class="absolute top-4 right-4 text-[10px] text-slate-600 font-code bg-black/30 px-2 py-1 rounded">player.gd</div>
+                        <h4 class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-6 flex items-center"><span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>Código GDScript</h4>
+                        <div id="code-content" class="font-code text-sm h-full overflow-x-auto text-slate-300 custom-scrollbar pb-4"></div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="grid lg:grid-cols-2 gap-8 mb-12">
-                    <div class="bg-game-panel p-6 rounded-xl border border-slate-600">
-                        <h3 class="font-retro text-xs text-slate-500 mb-4 uppercase">2. Ciclo de Vida do Script</h3>
-                        <div class="space-y-6 relative">
-                            <div class="absolute left-4 top-0 bottom-0 w-1 bg-slate-700"></div>
-                            <div class="relative pl-10">
-                                <div class="absolute left-2 top-2 w-5 h-5 bg-green-500 rounded-full border-4 border-slate-800 z-10"></div>
-                                <div class="bg-slate-800 p-4 rounded border-l-4 border-green-500">
-                                    <h4 class="font-code text-green-400 font-bold">func _ready():</h4>
-                                    <p class="text-xs text-slate-300 mt-1">Roda <strong>UMA VEZ</strong> no início.</p>
-                                </div>
-                            </div>
-                            <div class="relative pl-10">
-                                <div class="absolute left-2 top-8 w-5 h-5 bg-blue-500 rounded-full border-4 border-slate-800 z-10 animate-pulse"></div>
-                                <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
-                                    <h4 class="font-code text-blue-400 font-bold">func _process(delta):</h4>
-                                    <p class="text-xs text-slate-300 mt-1">Roda <strong>60 VEZES POR SEGUNDO</strong>.</p>
-                                </div>
-                            </div>
+        <section id="simulation" class="content-section hidden max-w-6xl mx-auto animate-fade-in pb-12">
+            <div class="mb-10 border-l-8 border-green-500 pl-6 py-1">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">Simulação Final</h2>
+                <p class="text-slate-500 text-lg md:text-xl font-light">Integração: Movimento, Pulo, Colisão e Dano.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-10 max-w-4xl mx-auto">
+                
+                <div class="senai-card p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-slate-700 font-bold flex items-center"><span class="text-xl mr-2">🎮</span> Resultado Visual</h3>
+                        <div class="flex gap-2">
+                            <span class="text-[10px] font-bold uppercase bg-slate-100 text-slate-500 px-2 py-1 rounded">Godot Engine Mockup</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative bg-sky-100 rounded-lg overflow-hidden border-4 border-slate-700 mb-8 shadow-inner" style="height: 300px;">
+                        <canvas id="simCanvas" width="800" height="300" class="w-full h-full object-cover"></canvas>
+                        
+                        <div class="absolute top-4 left-4 flex items-center bg-slate-900/90 p-2.5 rounded-lg text-white font-code text-xs shadow-lg border border-slate-700">
+                            <span class="text-red-500 text-lg mr-3 animate-pulse">❤</span> 
+                            <span class="text-slate-400 mr-2">HP:</span>
+                            <span id="sim-hp" class="text-xl font-bold text-white">3</span>
+                            <span class="text-slate-500 mx-1">/</span>3
+                        </div>
+                        
+                        <div class="absolute bottom-4 left-4 right-4 bg-black/80 p-3 rounded-lg text-green-400 font-code text-xs h-12 flex items-center border-l-4 border-green-500 shadow-lg">
+                            <span class="text-slate-500 mr-3 select-none">$</span> 
+                            <span id="sim-log">Aguardando início...</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 font-code text-xs h-full">
-                        <h3 class="font-retro text-xs text-slate-500 mb-4 uppercase">3. Dicionário de Comandos</h3>
-                        <div class="space-y-3 overflow-y-auto h-64 pr-2 custom-scrollbar">
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><span class="text-slate-400">Escrever no Console</span><span class="text-yellow-400">print("Oi")</span></div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><span class="text-slate-400">Destruir Objeto</span><span class="text-red-400">queue_free()</span></div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><span class="text-slate-400">Mover X</span><span class="text-blue-400">position.x += 10</span></div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><span class="text-slate-400">Apertou Tecla?</span><span class="text-green-400">Input.is_action_pressed</span></div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><span class="text-slate-400">Mudar Cena</span><span class="text-purple-400">change_scene(...)</span></div>
-                        </div>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <button onclick="runFinalSim()" class="bg-green-600 hover:bg-green-500 text-white font-black py-4 px-10 rounded-lg shadow-lg transition transform active:scale-95 flex items-center justify-center uppercase tracking-widest text-sm">
+                            <span class="mr-2 text-lg">▶</span> Iniciar Jogo
+                        </button>
+                        <button onclick="resetFinalSim()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-4 px-8 rounded-lg shadow transition uppercase tracking-wide text-sm border border-slate-300">
+                            ↺ Resetar
+                        </button>
                     </div>
-                </div>
-
-                <h3 class="font-retro text-game-godot text-center mb-6 text-sm">4. LABORATÓRIO PRÁTICO</h3>
-                <div class="bg-game-panel rounded-xl border border-slate-600 overflow-hidden shadow-2xl">
-                    <div class="flex border-b border-slate-700 bg-[#161b22]">
-                        <button onclick="showCodeTab('move')" id="tab-move" class="flex-1 py-3 text-xs md:text-sm font-bold bg-[#202531] text-white border-t-2 border-game-godot">🏃 MOVIMENTO 2D</button>
-                        <button onclick="showCodeTab('physics')" id="tab-physics" class="flex-1 py-3 text-xs md:text-sm font-bold text-slate-400 hover:text-white hover:bg-[#202531]">🪐 FÍSICA</button>
-                        <button onclick="showCodeTab('combat')" id="tab-combat" class="flex-1 py-3 text-xs md:text-sm font-bold text-slate-400 hover:text-white hover:bg-[#202531]">⚔️ COMBATE</button>
-                    </div>
-                    <div class="p-6 grid md:grid-cols-2 gap-8 bg-[#202531]">
-                        <div class="space-y-2">
-                            <h4 class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Lógica Humana</h4>
-                            <div id="logic-content" class="bg-slate-900/80 p-6 rounded border border-slate-700 text-slate-300 text-sm font-sans leading-relaxed h-full shadow-inner"></div>
-                        </div>
-                        <div class="space-y-2 relative">
-                            <h4 class="text-[10px] text-game-godot font-bold uppercase tracking-wider mb-2">Código GDScript</h4>
-                            <div class="absolute top-0 right-0 text-[10px] text-slate-600 font-code">player.gd</div>
-                            <div id="code-content" class="bg-[#161b22] p-6 rounded border border-slate-700 font-code text-sm h-full shadow-inner overflow-x-auto"></div>
-                        </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        <div class="flex items-center justify-center"><div class="w-3 h-3 bg-blue-600 mr-2 rounded"></div>Player (CharacterBody2D)</div>
+                        <div class="flex items-center justify-center"><div class="w-3 h-3 bg-slate-500 mr-2 rounded-sm"></div>Obstáculo (StaticBody2D)</div>
+                        <div class="flex items-center justify-center"><div class="w-3 h-3 bg-red-600 mr-2 rounded-full"></div>Inimigo (Area2D)</div>
                     </div>
                 </div>
-            </section>
 
-        </div>
+                <div class="code-block p-8 relative overflow-hidden shadow-2xl border border-slate-700">
+                     <div class="absolute top-0 right-0 bg-senai-blue text-white font-bold text-[10px] px-3 py-1.5 uppercase tracking-widest rounded-bl-lg">Script Completo</div>
+                     <div class="absolute top-0 left-0 bg-slate-800 px-4 py-1.5 rounded-br-lg border-r border-b border-slate-700">
+                        <h3 class="text-white font-bold text-xs flex items-center font-sans"><span class="mr-2">📜</span> PlayerController.gd</h3>
+                     </div>
+                     
+                     <div class="mt-8 font-code text-xs md:text-sm text-slate-300 overflow-x-auto custom-scrollbar h-[500px] pr-4 leading-relaxed">
+<p><span class="gd-keyword">extends</span> <span class="gd-node">CharacterBody2D</span></p>
+<br>
+<p><span class="gd-comment"># --- VARIÁVEIS (Atributos) ---</span></p>
+<p><span class="gd-keyword">var</span> <span class="gd-var">speed</span>: <span class="gd-type">float</span> = <span class="gd-num">200.0</span></p>
+<p><span class="gd-keyword">var</span> <span class="gd-var">jump_force</span>: <span class="gd-type">float</span> = <span class="gd-num">-400.0</span></p>
+<p><span class="gd-keyword">var</span> <span class="gd-var">gravity</span>: <span class="gd-type">float</span> = <span class="gd-num">980.0</span></p>
+<p><span class="gd-keyword">var</span> <span class="gd-var">hp</span>: <span class="gd-type">int</span> = <span class="gd-num">3</span></p>
+<br>
+<p><span class="gd-comment"># --- LOOP FÍSICO (Roda 60x/seg) ---</span></p>
+<p><span class="gd-keyword">func</span> <span class="gd-func">_physics_process</span>(delta):</p>
+<p class="pl-4"><span class="gd-comment"># 1. Aplica Gravidade se estiver no ar</span></p>
+<p class="pl-4"><span class="gd-keyword">if not</span> <span class="gd-func">is_on_floor</span>():</p>
+<p class="pl-8"><span class="gd-var">velocity</span>.y += <span class="gd-var">gravity</span> * delta</p>
+<br>
+<p class="pl-4"><span class="gd-comment"># 2. Verifica Input de Pulo</span></p>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-node">Input</span>.<span class="gd-func">is_action_just_pressed</span>(<span class="gd-string">"pular"</span>) <span class="gd-keyword">and</span> <span class="gd-func">is_on_floor</span>():</p>
+<p class="pl-8"><span class="gd-var">velocity</span>.y = <span class="gd-var">jump_force</span></p>
+<br>
+<p class="pl-4"><span class="gd-comment"># 3. Movimento Horizontal Constante (para a demo)</span></p>
+<p class="pl-4"><span class="gd-var">velocity</span>.x = <span class="gd-var">speed</span></p>
+<br>
+<p class="pl-4"><span class="gd-comment"># 4. Move e desliza nas superfícies</span></p>
+<p class="pl-4"><span class="gd-func">move_and_slide</span>()</p>
+<br>
+<p class="pl-4"><span class="gd-comment"># 5. Verifica colisões após mover</span></p>
+<p class="pl-4"><span class="gd-func">verificar_colisoes_inimigo</span>()</p>
+<br>
+<p><span class="gd-comment"># --- FUNÇÕES AUXILIARES ---</span></p>
+<br>
+<p><span class="gd-keyword">func</span> <span class="gd-func">verificar_colisoes_inimigo</span>():</p>
+<p class="pl-4"><span class="gd-comment"># Loop por todas as colisões que aconteceram neste frame</span></p>
+<p class="pl-4"><span class="gd-keyword">for</span> i <span class="gd-keyword">in</span> <span class="gd-func">get_slide_collision_count</span>():</p>
+<p class="pl-8"><span class="gd-keyword">var</span> collision = <span class="gd-func">get_slide_collision</span>(i)</p>
+<p class="pl-8"><span class="gd-comment"># Se o objeto colidido estiver no grupo "Inimigos"</span></p>
+<p class="pl-8"><span class="gd-keyword">if</span> collision.<span class="gd-func">get_collider</span>().<span class="gd-func">is_in_group</span>(<span class="gd-string">"inimigos"</span>):</p>
+<p class="pl-12"><span class="gd-func">tomar_dano</span>(<span class="gd-num">1</span>)</p>
+<p class="pl-12"><span class="gd-comment"># Empurrão para trás (knockback simples)</span></p>
+<p class="pl-12"><span class="gd-var">velocity</span>.x = <span class="gd-num">-500</span> </p>
+<p class="pl-12"><span class="gd-var">velocity</span>.y = <span class="gd-num">-200</span> </p>
+<br>
+<p><span class="gd-keyword">func</span> <span class="gd-func">tomar_dano</span>(quantidade):</p>
+<p class="pl-4"><span class="gd-var">hp</span> -= quantidade</p>
+<p class="pl-4"><span class="gd-func">print</span>(<span class="gd-string">"Ai! HP restante: "</span> + <span class="gd-func">str</span>(<span class="gd-var">hp</span>))</p>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-var">hp</span> <= <span class="gd-num">0</span>:</p>
+<p class="pl-8"><span class="gd-func">queue_free</span>() <span class="gd-comment"># Game Over (Remove Player)</span></p>
+                     </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
-        // --- NAVIGATION ---
+        // --- NAVIGATION & UI LOGIC ---
         function showSection(id) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0, 0);
+            
+            // Mobile Menu Logic
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('mobile-overlay').classList.add('hidden');
+            }
+
+            // Active State Logic
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-800', 'border-l-4', 'border-purple-500');
-                if(btn.innerHTML.includes(getSectionTitle(id))) btn.classList.add('bg-slate-800', 'border-l-4', 'border-purple-500');
+                btn.classList.remove('bg-slate-100', 'border-senai-blue', 'bg-green-50', 'border-green-500', 'bg-blue-50', 'bg-yellow-50', 'bg-pink-50', 'hover:border-yellow-500', 'hover:border-pink-500', 'hover:border-green-600');
+                btn.classList.add('border-transparent');
+                
+                if(btn.onclick.toString().includes(id)) {
+                    if(id === 'simulation') {
+                        btn.classList.add('bg-green-50', 'border-green-500');
+                    } else if (id === 'oop') {
+                        btn.classList.add('bg-yellow-50', 'border-yellow-500');
+                    } else if (id === 'gamedesign') {
+                        btn.classList.add('bg-pink-50', 'border-pink-500');
+                    } else {
+                        btn.classList.add('bg-slate-100', 'border-senai-blue');
+                    }
+                    btn.classList.remove('border-transparent');
+                }
             });
+
+            // Start/Stop Loops based on visibility
             if(id === 'loop') startLoop(); else stopLoop();
+            if(id === 'simulation') resetFinalSim();
         }
-        function getSectionTitle(id) {
-            const map = { 'intro':'Aquecimento', 'algo':'Algoritmo', 'vars':'Variáveis', 'cond':'Condicionais', 'loop':'Game Loop', 'oop':'POO', 'gamedesign':'Design', 'gdscript':'GDScript' };
-            return map[id] || '';
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+
+        function toggleMobileMenu() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
         }
-        function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
-        document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        overlay.addEventListener('click', toggleMobileMenu);
 
         // --- ROBOT LOGIC ---
         const grid = document.getElementById('robot-grid');
         const codeDisplay = document.getElementById('code-display');
-        let commands = [], robotPos = {x:0,y:0}, robotDir = 0; const targetPos = {x:4,y:4};
+        let commands = [], robotPos = {x:0,y:0}, robotDir = 1; const targetPos = {x:4,y:4};
+
         function initGrid() {
             grid.innerHTML = '';
             for(let y=0; y<5; y++) {
                 for(let x=0; x<5; x++) {
-                    const cell = document.createElement('div'); cell.className = 'grid-cell bg-slate-800 flex items-center justify-center text-2xl'; cell.id = `cell-${x}-${y}`;
-                    if(x === targetPos.x && y === targetPos.y) { cell.innerHTML = '🚩'; cell.classList.add('bg-green-900/30'); }
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell bg-white rounded flex items-center justify-center text-xl md:text-2xl shadow-sm transition-colors duration-300';
+                    cell.id = `cell-${x}-${y}`;
+                    if(x === targetPos.x && y === targetPos.y) {
+                        cell.innerHTML = '🚩'; cell.classList.add('bg-green-100');
+                    }
                     grid.appendChild(cell);
                 }
             }
             updateRobotVisual();
         }
+
         function updateRobotVisual() {
             document.querySelectorAll('.robot-icon').forEach(el => el.remove());
             const cell = document.getElementById(`cell-${robotPos.x}-${robotPos.y}`);
             if(cell) {
-                const robot = document.createElement('div'); robot.className = 'robot-icon absolute inset-0 flex items-center justify-center text-3xl';
-                robot.style.transform = `rotate(${robotDir * 90}deg)`; robot.innerHTML = '🤖'; cell.appendChild(robot);
+                const robot = document.createElement('div');
+                robot.className = 'robot-icon absolute inset-0 flex items-center justify-center text-2xl md:text-3xl transition-transform duration-300';
+                robot.style.transform = `rotate(${ (robotDir - 1) * 90 }deg)`; 
+                robot.innerHTML = '🤖';
+                cell.appendChild(robot);
             }
         }
-        function addCommand(cmd) { commands.push(cmd); const map = {'F':'Andar()','L':'Virar_Esq()','R':'Virar_Dir()'}; const line = document.createElement('div'); line.textContent = `${commands.length}. ${map[cmd]}`; codeDisplay.appendChild(line); codeDisplay.scrollTop = codeDisplay.scrollHeight; }
-        function resetRobot() { commands = []; codeDisplay.innerHTML = ''; robotPos = {x:0,y:0}; robotDir = 1; updateRobotVisual(); }
+
+        function addCommand(cmd) {
+            commands.push(cmd);
+            const map = {'F':'Andar()','L':'Virar Esq','R':'Virar Dir'};
+            const line = document.createElement('div');
+            line.className = "text-[10px] md:text-xs font-mono border-b border-slate-700/50 pb-1";
+            line.textContent = `${commands.length}. ${map[cmd]}`;
+            codeDisplay.appendChild(line);
+            codeDisplay.scrollTop = codeDisplay.scrollHeight;
+        }
+
+        function resetRobot() {
+            commands = []; codeDisplay.innerHTML = '<span class="text-slate-600 italic opacity-50">Adicione comandos para começar...</span>';
+            robotPos = {x:0,y:0}; robotDir = 1; 
+            updateRobotVisual();
+        }
+
         async function runRobot() {
+            if(commands.length === 0) return alert("Adicione comandos primeiro!");
             robotPos = {x:0,y:0}; robotDir = 1; updateRobotVisual();
             for(let cmd of commands) {
-                await new Promise(r => setTimeout(r, 500));
-                if(cmd === 'L') robotDir = (robotDir - 1 + 4) % 4; if(cmd === 'R') robotDir = (robotDir + 1) % 4;
+                await new Promise(r => setTimeout(r, 400));
+                if(cmd === 'L') robotDir = (robotDir - 1 + 4) % 4;
+                if(cmd === 'R') robotDir = (robotDir + 1) % 4;
                 if(cmd === 'F') {
-                    if(robotDir===0 && robotPos.y>0) robotPos.y--; if(robotDir===1 && robotPos.x<4) robotPos.x++;
-                    if(robotDir===2 && robotPos.y<4) robotPos.y++; if(robotDir===3 && robotPos.x>0) robotPos.x--;
+                    if(robotDir === 0 && robotPos.y > 0) robotPos.y--;
+                    if(robotDir === 1 && robotPos.x < 4) robotPos.x++;
+                    if(robotDir === 2 && robotPos.y < 4) robotPos.y++;
+                    if(robotDir === 3 && robotPos.x > 0) robotPos.x--;
                 }
                 updateRobotVisual();
             }
-            setTimeout(() => { if(robotPos.x === targetPos.x && robotPos.y === targetPos.y) alert("🎉 OBJETIVO ALCANÇADO!"); }, 300);
+            setTimeout(() => {
+                if(robotPos.x === targetPos.x && robotPos.y === targetPos.y) alert("🎉 OBJETIVO ALCANÇADO!");
+            }, 300);
         }
 
-        // --- VARS & COND LOGIC ---
-        let hp = 100, hasKey = false;
+        // --- VARIABLES & LOGIC ---
+        let hp = 100;
+        let hasKey = false;
+
         function updateVar(type, val) {
-            if(type === 'hp') { hp = Math.min(100, Math.max(0, hp + val)); document.getElementById('display-hp').innerText = hp; }
+            if(type === 'hp') {
+                hp = Math.min(100, Math.max(0, hp + val));
+                document.getElementById('display-hp').innerText = hp;
+            }
         }
         function updateName() {
             const input = document.getElementById('input-name');
-            if(input.value) { document.getElementById('display-name').innerText = `"${input.value}"`; input.value = ''; }
+            if(input.value) {
+                document.getElementById('display-name').innerText = `"${input.value}"`;
+                input.value = '';
+            }
         }
         function toggleKey() {
             hasKey = !hasKey;
             document.getElementById('display-key').innerText = hasKey ? '🔑' : '❌';
-            document.getElementById('key-checkbox').checked = hasKey; checkDoor();
+            document.getElementById('key-checkbox').checked = hasKey;
+            checkDoor();
         }
+
+        // --- CONDITIONALS LOGIC ---
         function checkDoor() {
-            const chk = document.getElementById('key-checkbox'); const gate = document.getElementById('gate-status'); const msg = document.getElementById('door-msg');
-            if(hasKey !== chk.checked) { hasKey = chk.checked; document.getElementById('display-key').innerText = hasKey ? '🔑' : '❌'; }
-            if(chk.checked) { gate.classList.replace('bg-red-500','bg-green-500'); gate.innerHTML='🔓'; msg.innerText="ACESSO PERMITIDO"; msg.className="mt-4 text-green-400 font-retro text-xs"; }
-            else { gate.classList.replace('bg-green-500','bg-red-500'); gate.innerHTML='🔒'; msg.innerText="ACESSO NEGADO"; msg.className="mt-4 text-red-400 font-retro text-xs"; }
+            const checkbox = document.getElementById('key-checkbox');
+            const gate = document.getElementById('gate-status');
+            const msg = document.getElementById('door-msg');
+            
+            if(hasKey !== checkbox.checked) {
+                hasKey = checkbox.checked;
+                document.getElementById('display-key').innerText = hasKey ? '🔑' : '❌';
+            }
+
+            if(checkbox.checked) {
+                gate.classList.remove('bg-red-100', 'border-red-500');
+                gate.classList.add('bg-green-100', 'border-green-500');
+                gate.innerHTML = '<span class="text-5xl md:text-6xl">🔓</span>';
+                msg.innerText = "ACESSO PERMITIDO";
+                msg.classList.replace('text-red-500', 'text-green-500');
+            } else {
+                gate.classList.add('bg-red-100', 'border-red-500');
+                gate.classList.remove('bg-green-100', 'border-green-500');
+                gate.innerHTML = '<span class="text-5xl md:text-6xl">🔒</span>';
+                msg.innerText = "ACESSO NEGADO";
+                msg.classList.replace('text-green-500', 'text-red-500');
+            }
         }
 
-        // --- LOOP CANVAS ---
-        const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d');
-        let loopId, ball={x:50,y:50,dx:4,dy:4,r:15}, frames=0;
+        // --- LOOP CANVAS LOGIC ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 400; 
+        canvas.height = 300;
+        
+        let loopId;
+        let ball = { x: 50, y: 50, dx: 3, dy: 3, radius: 12 };
+        let frames = 0;
+
         function drawLoop() {
-            ctx.fillStyle='#0f172a'; ctx.fillRect(0,0,400,300);
-            ball.x+=ball.dx; ball.y+=ball.dy;
-            if(ball.x<0||ball.x>400) ball.dx=-ball.dx; if(ball.y<0||ball.y>300) ball.dy=-ball.dy;
-            ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fillStyle='#8b5cf6'; ctx.fill();
-            frames++; document.getElementById('fps-counter').innerText=60; document.getElementById('frame-counter').innerText=frames;
-            const step = Math.floor((Date.now() / 333) % 3);
-            ['step-input','step-update','step-draw'].forEach((s,i) => {
-                document.getElementById(s).classList.toggle('border-green-500', i===step);
-                document.getElementById(s).classList.toggle('text-green-400', i===step);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if(ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx = -ball.dx;
+            if(ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) ball.dy = -ball.dy;
+
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#E52421'; 
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+
+            frames++;
+            document.getElementById('fps-counter').innerText = 60; 
+            document.getElementById('frame-counter').innerText = frames;
+
+            const step = Math.floor((Date.now() / 500) % 3);
+            const steps = ['step-input', 'step-update', 'step-draw'];
+            steps.forEach((s, i) => {
+                const el = document.getElementById(s);
+                if(i === step) {
+                    el.classList.add('border-senai-blue', 'bg-blue-50', 'scale-105', 'shadow-md');
+                    el.classList.remove('border-slate-200');
+                } else {
+                    el.classList.remove('border-senai-blue', 'bg-blue-50', 'scale-105', 'shadow-md');
+                    el.classList.add('border-slate-200');
+                }
             });
-            loopId=requestAnimationFrame(drawLoop);
-        }
-        function startLoop(){ if(!loopId) drawLoop(); } function stopLoop(){ cancelAnimationFrame(loopId); loopId=null; }
 
-        // --- DESIGN & GD SCRIPT ---
+            loopId = requestAnimationFrame(drawLoop);
+        }
+
+        function startLoop() { if(!loopId) drawLoop(); }
+        function stopLoop() { if(loopId) { cancelAnimationFrame(loopId); loopId = null; } }
+
+        // --- GAME DESIGN FLOW LOGIC ---
         function updateFlow() {
-            const skill = document.getElementById('skill-slider').value, diff = document.getElementById('diff-slider').value;
-            const dot = document.getElementById('flow-dot'), status = document.getElementById('flow-status');
-            dot.style.left = skill+'%'; dot.style.bottom = diff+'%';
-            const bal = diff - skill;
-            if(bal > 30) { status.innerText="ANSIEDADE"; status.className="text-center font-retro text-sm text-red-400 mt-2"; }
-            else if(bal < -30) { status.innerText="TÉDIO"; status.className="text-center font-retro text-sm text-blue-400 mt-2"; }
-            else { status.innerText="FLOW"; status.className="text-center font-retro text-sm text-green-400 mt-2 animate-pulse"; }
+            const skill = parseInt(document.getElementById('skill-slider').value);
+            const diff = parseInt(document.getElementById('diff-slider').value);
+            const dot = document.getElementById('flow-dot');
+            const status = document.getElementById('flow-status');
+
+            dot.style.left = skill + '%';
+            dot.style.bottom = diff + '%';
+
+            const balance = diff - skill;
+            
+            if (balance > 30) {
+                status.innerText = "ESTADO: ANSIEDADE (MUITO DIFÍCIL)";
+                status.className = "text-center font-bold text-sm text-white bg-red-500 py-3 rounded-lg mt-4 transition-colors shadow-md";
+            } else if (balance < -30) {
+                status.innerText = "ESTADO: TÉDIO (MUITO FÁCIL)";
+                status.className = "text-center font-bold text-sm text-white bg-blue-400 py-3 rounded-lg mt-4 transition-colors shadow-md";
+            } else {
+                status.innerText = "ESTADO: FLOW (DIVERSÃO!)";
+                status.className = "text-center font-bold text-sm text-white bg-green-500 py-3 rounded-lg mt-4 transition-colors shadow-md animate-pulse";
+            }
         }
 
+        // --- GDSCRIPT TABS LOGIC ---
         const gdCodes = {
             'move': {
-                l: `<p class="mb-4 text-white"><strong>Objetivo:</strong> Mover para a direita.</p><ol class="list-decimal pl-5 space-y-3"><li>Defina <span class="text-yellow-400">velocidade</span>.</li><li>No loop (<strong>_process</strong>):</li><li>Se tecla 'Direita' apertada:</li><li>Some velocidade ao <span class="text-blue-400">X</span>.</li></ol>`,
-                c: `<p><span class="gd-keyword">extends</span> <span class="gd-node">Sprite2D</span></p><br><p><span class="gd-keyword">var</span> <span class="gd-var">velocidade</span> = <span class="gd-num">5</span></p><br><p><span class="gd-keyword">func</span> <span class="gd-func">_process</span>(delta):</p><p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-node">Input</span>.<span class="gd-func">is_action_pressed</span>(<span class="gd-string">"ui_right"</span>):</p><p class="pl-8"><span class="gd-var">position</span>.x += <span class="gd-var">velocidade</span></p>`
+                l: `
+                    <p class="mb-4"><strong>Cenário:</strong> Mover o personagem para a direita.</p>
+                    <ol class="list-decimal pl-5 space-y-3 marker:text-senai-blue marker:font-bold">
+                        <li>Defina uma caixa chamada <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-mono text-xs">velocidade</span>.</li>
+                        <li>Dentro do loop infinito (<strong>_process</strong>):</li>
+                        <li>Verifique se a tecla "Direita" está apertada.</li>
+                        <li>Se sim, aumente a posição <span class="text-blue-600 font-bold">X</span> somando a velocidade.</li>
+                    </ol>
+                `,
+                c: `
+<p><span class="gd-keyword">extends</span> <span class="gd-node">Sprite2D</span></p>
+<br>
+<p><span class="gd-keyword">var</span> <span class="gd-var">velocidade</span> = <span class="gd-num">5</span></p>
+<br>
+<p><span class="gd-keyword">func</span> <span class="gd-func">_process</span>(delta):</p>
+<p class="pl-4"><span class="gd-comment"># Verifica Input</span></p>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-node">Input</span>.<span class="gd-func">is_action_pressed</span>(<span class="gd-string">"ui_right"</span>):</p>
+<p class="pl-8"><span class="gd-var">position</span>.x += <span class="gd-var">velocidade</span></p>`
             },
             'physics': {
-                l: `<p class="mb-4 text-white"><strong>Objetivo:</strong> Gravidade e Pulo.</p><ol class="list-decimal pl-5 space-y-3"><li>Defina <span class="text-yellow-400">gravidade</span> e <span class="text-yellow-400">pulo</span>.</li><li>Se não estiver no chão: Caia (Aumente Y).</li><li>Se apertar 'Pular' no chão: Suba (Diminua Y).</li><li>Mova (move_and_slide).</li></ol>`,
-                c: `<p><span class="gd-keyword">extends</span> <span class="gd-node">CharacterBody2D</span></p><br><p><span class="gd-keyword">var</span> <span class="gd-var">grav</span> = <span class="gd-num">980</span></p><p><span class="gd-keyword">var</span> <span class="gd-var">pulo</span> = <span class="gd-num">-400</span></p><br><p><span class="gd-keyword">func</span> <span class="gd-func">_physics_process</span>(delta):</p><p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-keyword">not</span> <span class="gd-func">is_on_floor</span>():</p><p class="pl-8"><span class="gd-var">velocity</span>.y += <span class="gd-var">grav</span> * delta</p><p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-node">Input</span>.<span class="gd-func">is_action_just_pressed</span>(<span class="gd-string">"ui_accept"</span>) <span class="gd-keyword">and</span> <span class="gd-func">is_on_floor</span>():</p><p class="pl-8"><span class="gd-var">velocity</span>.y = <span class="gd-var">pulo</span></p><p class="pl-4"><span class="gd-func">move_and_slide</span>()</p>`
+                l: `
+                    <p class="mb-4"><strong>Cenário:</strong> Gravidade e Pulo.</p>
+                    <ol class="list-decimal pl-5 space-y-3 marker:text-senai-blue marker:font-bold">
+                        <li>Defina <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-mono text-xs">gravidade</span> e <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-mono text-xs">pulo</span>.</li>
+                        <li>Se não estiver no chão: Caia (Aumente Y).</li>
+                        <li>Se apertar 'Pular' E estiver no chão: Pule (Diminua Y).</li>
+                        <li>Mande a Godot mover (<span class="font-mono text-xs bg-slate-200 px-1">move_and_slide</span>).</li>
+                    </ol>
+                `,
+                c: `
+<p><span class="gd-keyword">extends</span> <span class="gd-node">CharacterBody2D</span></p>
+<br>
+<p><span class="gd-keyword">var</span> <span class="gd-var">gravidade</span> = <span class="gd-num">980</span></p>
+<p><span class="gd-keyword">var</span> <span class="gd-var">pulo</span> = <span class="gd-num">-400</span></p>
+<br>
+<p><span class="gd-keyword">func</span> <span class="gd-func">_physics_process</span>(delta):</p>
+<p class="pl-4"><span class="gd-comment"># Aplica Gravidade</span></p>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-keyword">not</span> <span class="gd-func">is_on_floor</span>():</p>
+<p class="pl-8"><span class="gd-var">velocity</span>.y += <span class="gd-var">gravidade</span> * delta</p>
+<br>
+<p class="pl-4"><span class="gd-comment"># Pular</span></p>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-node">Input</span>.<span class="gd-func">is_action_just_pressed</span>(<span class="gd-string">"pular"</span>):</p>
+<p class="pl-8"><span class="gd-var">velocity</span>.y = <span class="gd-var">pulo</span></p>
+<br>
+<p class="pl-4"><span class="gd-func">move_and_slide</span>()</p>`
             },
             'combat': {
-                l: `<p class="mb-4 text-white"><strong>Objetivo:</strong> Sistema de Dano.</p><ol class="list-decimal pl-5 space-y-3"><li>Crie <span class="text-yellow-400">hp</span>.</li><li>Função <strong>tomar_dano</strong>:</li><li>Diminua HP.</li><li>Se HP <= 0: Morrer (queue_free).</li></ol>`,
-                c: `<p><span class="gd-keyword">var</span> <span class="gd-var">hp</span> = <span class="gd-num">100</span></p><br><p><span class="gd-keyword">func</span> <span class="gd-func">tomar_dano</span>(dano):</p><p class="pl-4"><span class="gd-var">hp</span> -= dano</p><p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-var">hp</span> <= <span class="gd-num">0</span>:</p><p class="pl-8"><span class="gd-func">queue_free</span>()</p>`
+                l: `
+                    <p class="mb-4"><strong>Cenário:</strong> Sistema de Dano.</p>
+                    <ol class="list-decimal pl-5 space-y-3 marker:text-senai-blue marker:font-bold">
+                        <li>Crie uma variável de <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-mono text-xs">hp</span>.</li>
+                        <li>Crie uma função <span class="font-mono text-xs bg-slate-200 px-1">tomar_dano</span>.</li>
+                        <li>Quando chamada, diminua o HP.</li>
+                        <li>Se HP menor que 0: Destrua o personagem.</li>
+                    </ol>
+                `,
+                c: `
+<p><span class="gd-keyword">var</span> <span class="gd-var">hp</span>: <span class="gd-type">int</span> = <span class="gd-num">100</span></p>
+<br>
+<p><span class="gd-keyword">func</span> <span class="gd-func">tomar_dano</span>(dano):</p>
+<p class="pl-4"><span class="gd-var">hp</span> -= dano</p>
+<p class="pl-4"><span class="gd-func">print</span>(<span class="gd-string">"Ai! Vida: "</span> + <span class="gd-func">str</span>(<span class="gd-var">hp</span>))</p>
+<br>
+<p class="pl-4"><span class="gd-keyword">if</span> <span class="gd-var">hp</span> <= <span class="gd-num">0</span>:</p>
+<p class="pl-8"><span class="gd-func">queue_free</span>() <span class="gd-comment"># Remove da cena</span></p>`
             }
         };
 
         function showCodeTab(tab) {
-            ['move','physics','combat'].forEach(t => {
+            ['move', 'physics', 'combat'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
-                if(t===tab) { btn.classList.add('bg-[#202531]','text-white','border-game-godot'); btn.classList.remove('text-slate-400','border-transparent'); }
-                else { btn.classList.remove('bg-[#202531]','text-white','border-game-godot'); btn.classList.add('text-slate-400','border-transparent'); }
+                if(t === tab) {
+                    btn.classList.add('border-senai-blue', 'text-senai-blue', 'bg-blue-50');
+                    btn.classList.remove('border-transparent', 'text-slate-600', 'hover:bg-slate-100');
+                } else {
+                    btn.classList.remove('border-senai-blue', 'text-senai-blue', 'bg-blue-50');
+                    btn.classList.add('border-transparent', 'text-slate-600', 'hover:bg-slate-100');
+                }
             });
             document.getElementById('logic-content').innerHTML = gdCodes[tab].l;
             document.getElementById('code-content').innerHTML = gdCodes[tab].c;
         }
 
-        // Init
-        initGrid(); showCodeTab('move'); showSection('intro'); updateFlow();
+        // --- FINAL SIMULATION LOGIC ---
+        const simCanvas = document.getElementById('simCanvas');
+        const sCtx = simCanvas.getContext('2d');
+        let simLoopId;
+        let simState = { pX: 50, pY: 200, vY: 0, hp: 3, step: 0, log: "..." };
+        const GROUND_Y = 200;
+        
+        function resetFinalSim() {
+            if(simLoopId) cancelAnimationFrame(simLoopId);
+            simState = { pX: 50, pY: GROUND_Y, vY: 0, hp: 3, step: 0, log: "Aguardando start..." };
+            drawFinalSim();
+            document.getElementById('sim-hp').innerText = 3;
+            document.getElementById('sim-log').innerText = "Pronto.";
+        }
+
+        function runFinalSim() {
+            resetFinalSim();
+            animateFinalSim();
+        }
+
+        function animateFinalSim() {
+            simState.step++;
+            let moving = false;
+            let isHit = false;
+
+            // Roteiro da animação
+            if(simState.step < 100) { 
+                simState.pX += 2; 
+                simState.log = 'velocity.x = speed (Andando)';
+                moving = true;
+            } 
+            else if(simState.step >= 100 && simState.step < 160) {
+                if(simState.step === 100) simState.vY = -12;
+                simState.pX += 2;
+                simState.log = 'Input "pular" -> velocity.y = jump_force';
+            }
+            else if(simState.step >= 160 && simState.step < 230) {
+                simState.pX += 2;
+                simState.log = 'is_on_floor() (No chão)';
+                moving = true;
+            }
+            else if(simState.step === 230) {
+                simState.hp = 2;
+                document.getElementById('sim-hp').innerText = simState.hp;
+                simState.log = 'Colisão Inimigo -> tomar_dano(1)';
+                isHit = true;
+            }
+            else if(simState.step > 230 && simState.step < 250) {
+                simState.pX -= 2;
+                simState.log = 'Knockback (Recuo)';
+                isHit = true;
+            }
+            else if(simState.step >= 250) {
+                simState.log = 'Fim da Simulação.';
+            }
+
+            // Física Mock
+            simState.pY += simState.vY;
+            if(simState.pY < GROUND_Y) {
+                simState.vY += 0.6; 
+            } else {
+                simState.pY = GROUND_Y;
+                simState.vY = 0;
+            }
+
+            drawFinalSim(moving, isHit);
+
+            if(simState.step < 300) {
+                simLoopId = requestAnimationFrame(animateFinalSim);
+            }
+        }
+
+        function drawFinalSim(isMoving, isHit) {
+            // Limpa
+            sCtx.fillStyle = '#bae6fd'; 
+            sCtx.fillRect(0, 0, 800, 300);
+
+            // Chão
+            sCtx.fillStyle = '#4ade80';
+            sCtx.fillRect(0, 220, 800, 80);
+            sCtx.strokeStyle = '#15803d';
+            sCtx.lineWidth = 4;
+            sCtx.beginPath(); sCtx.moveTo(0,220); sCtx.lineTo(800,220); sCtx.stroke();
+
+            // Obstáculo
+            sCtx.fillStyle = '#64748b';
+            sCtx.fillRect(250, 190, 30, 30);
+            
+            // Inimigo
+            sCtx.fillStyle = '#dc2626';
+            sCtx.beginPath(); sCtx.arc(550, 210, 15, 0, Math.PI*2); sCtx.fill();
+            sCtx.fillStyle = 'white'; sCtx.fillRect(545, 205, 4, 4); sCtx.fillRect(555, 205, 4, 4);
+
+            // Player
+            sCtx.fillStyle = isHit ? '#ffffff' : '#0284c7';
+            sCtx.fillRect(simState.pX, simState.pY, 20, 20);
+            
+            // Olho do Player
+            sCtx.fillStyle = 'white';
+            sCtx.fillRect(simState.pX + 12, simState.pY + 4, 6, 6);
+
+            // Log UI
+            document.getElementById('sim-log').innerText = simState.log;
+        }
+
+        // --- INIT ---
+        initGrid(); 
+        showCodeTab('move');
+        showSection('intro'); 
+        updateFlow();
+
     </script>
 </body>
 </html>
